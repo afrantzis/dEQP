@@ -1,7 +1,7 @@
 // Copyright 2018, Collabora Inc.
 // SPDX-License-Identifier: BSL-1.0
 /*!
- * This file the main control logic for the dEQP runnering program.
+ * This file holds code for reading the configuration file.
  */
 module deqp.config;
 

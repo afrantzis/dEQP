@@ -6,7 +6,9 @@
 module deqp.driver;
 
 import watt = [
-	watt.algorithm
+	watt.path,
+	watt.io.file,
+	watt.algorithm,
 	];
 
 import proc = watt.process;
@@ -27,19 +29,12 @@ public:
 	buildDir: string;
 	tests: string[];
 
-	hasty: bool;
-	hastySize: u32;
+	hasty: bool = true;
+	hastySize: u32 = 10;
 
-	numThreads: u32;
+	numThreads: u32 = 4;
 
-
-public:
-	this()
-	{
-		numThreads = 4;
-		hasty = true;
-		hastySize = 100;
-	}
+	tempDir: string = "/tmp/dEQP";
 }
 
 /*!
@@ -53,9 +48,6 @@ public:
 	procs: proc.Group;
 
 
-private:
-
-
 public:
 	this()
 	{
@@ -67,25 +59,52 @@ public:
 		settings.parseConfigFile();
 		settings.parseTestFile();
 
+		// Looks up dependant paths and binaries.
+		suite := new Suite(settings.buildDir, settings.tempDir);
+
 		procs = new proc.Group(settings.numThreads);
+		watt.mkdirP(suite.tempDir);
+		watt.chdir(suite.runDir);
 
 		tests := settings.tests;
+		groups: Group[];
 		count: u32;
 		while (count < tests.length) {
+			start := count + 1;
 			num := watt.min(tests.length - count, settings.hastySize);
 			subTests := new string[](num);
 			foreach (ref test; subTests) {
 				test = tests[count++];
 			}
-			procs.run("/bin/echo", subTests, done);
+
+			group := new Group(suite, start, count, subTests);
+			group.run(procs);
+			groups ~= group;
 		}
 
 		procs.waitAll();
-		return 0;
-	}
 
-	fn done(retval: int)
-	{
-		info("Done %s", retval);
+		numPass, numFail, numSkip: u32;
+		foreach (testGroup; groups) {
+			foreach (i, res; testGroup.results) {
+				final switch (res) with (Result) {
+				case Incomplete:
+				case Failed:
+				case InternalError:
+					numFail++;
+					break;
+				case QualityWarning:
+				case Passed:
+					numPass++;
+					break;
+				case NotSupported:
+					numSkip++;
+					break;
+				}
+			}
+		}
+
+		info("passed: %s, failed: %s, skipped: %s, total: %s", numPass, numFail, numSkip, tests.length);
+		return 0;
 	}
 }
