@@ -10,11 +10,12 @@ import deqp.driver;
 import watt = [watt.io.file, watt.xdg.basedir];
 import toml = watt.toml;
 
+enum ConfigFile = "dEQP/config.toml";
 
 fn parseConfigFile(s: Settings)
 {
 	version (Linux) {
-		configFile := watt.findConfigFile("dEQP/config.toml");
+		configFile := watt.findConfigFile(ConfigFile);
 	} else {
 		configFile: string[];
 	}
@@ -28,14 +29,14 @@ fn parseConfigFile(s: Settings)
 		return;
 	}
 
-	if (root.hasKey("buildDir")) {
-		s.buildDir = root["buildDir"].str();
+	if (root.hasKey("ctsBuildDir")) {
+		s.ctsBuildDir = root["ctsBuildDir"].str();
 	}
 	if (root.hasKey("testNamesFile")) {
 		s.testNamesFile = root["testNamesFile"].str();
 	}
-	if (root.hasKey("hastySize")) {
-		s.hastySize = cast(u32) root["hastySize"].integer();
+	if (root.hasKey("hastyBatchSize")) {
+		s.hastyBatchSize = cast(u32) root["hastyBatchSize"].integer();
 		s.hasty = true;
 	}
 }
