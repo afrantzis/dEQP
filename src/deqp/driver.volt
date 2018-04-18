@@ -8,6 +8,7 @@ module deqp.driver;
 import watt = [
 	watt.path,
 	watt.io.file,
+	watt.io.streams,
 	watt.algorithm,
 	watt.xdg.basedir,
 	watt.text.getopt,
@@ -27,6 +28,8 @@ import deqp.config;
 class Settings
 {
 public:
+	resultsFile: string;
+
 	testNamesFile: string;
 	ctsBuildDir: string;
 	tests: string[];
@@ -48,17 +51,14 @@ class Driver
 public:
 	settings: Settings;
 	procs: proc.Group;
+	results: Results;
 
 
 public:
-	this()
-	{
-	}
-
 	fn run(args: string[]) i32
 	{
 		settings = new Settings();
-		settings.parseConfigFile();
+		parseConfigFile(settings);
 		parseArgs(args);
 
 		if (ret := checkArgs()) {
@@ -71,16 +71,24 @@ public:
 		// Looks up dependant paths and binaries.
 		suite := new Suite(settings.ctsBuildDir, settings.tempDir);
 
+		// Create worker pool.
 		procs = new proc.Group(cast(u32) settings.numThreads);
+
+		// Temporary directory.
 		watt.mkdirP(suite.tempDir);
+
+		// Set the correct working directory for running tests.
+		originalWorkingDirectory := watt.getcwd();
 		watt.chdir(suite.runDir);
 
+		// Run all of the tests.
+		info(" :: Running tests in groups of %s.", settings.hastyBatchSize);
 		tests := settings.tests;
 		groups: Group[];
 		count: u32;
 		while (count < tests.length) {
 			start := count + 1;
-			num := watt.min(tests.length - count, cast(u32) settings.hastyBatchSize);
+			num := watt.min(tests.length - count, settings.hastyBatchSize);
 			subTests := new string[](num);
 			foreach (ref test; subTests) {
 				test = tests[count++];
@@ -88,46 +96,37 @@ public:
 
 			group := new Group(suite, start, count, subTests);
 			group.run(procs);
-			groups ~= group;
+			results.groups ~= group;
 		}
 
+		// Wait for all test groups to complete.
 		procs.waitAll();
 
-		numPass, numFail, numSkip, numQual: u32;
-		foreach (testGroup; groups) {
-			foreach (i, res; testGroup.results) {
-				final switch (res) with (Result) {
-				case Incomplete:
-				case Failed:
-				case InternalError:
-					numFail++;
-					break;
-				case QualityWarning:
-					numQual++;
-					goto case;
-				case Passed:
-					numPass++;
-					break;
-				case NotSupported:
-					numSkip++;
-					break;
-				}
-			}
-		}
+		// Set the old working directory.
+		watt.chdir(originalWorkingDirectory);
 
-		info("passed: %s, failed: %s, skipped: %s, quality warnings: %s, total: %s", numPass, numFail, numSkip, numQual, tests.length);
+		results.count();
+
+		info(" :: All test completed.");
+		info("\tok: %s, bad: %s, skip: %s, total: %s", results.getOk(), results.getBad(), results.getSkip(), tests.length);
+
+		// Write out the results
+		writeResults();
+
+		info(" :: Exiting!");
 		return 0;
 	}
 
 	fn parseArgs(args: string[])
 	{
 		threads, hastyBatchSize: i32;
-		testNamesFile, ctsBuildDir: string;
+		testNamesFile, ctsBuildDir, resultsFile: string;
 
 		watt.getopt(ref args, "threads", ref threads);
 		watt.getopt(ref args, "hasty-batch-size", ref hastyBatchSize);
 		watt.getopt(ref args, "cts-build-dir", ref ctsBuildDir);
 		watt.getopt(ref args, "test-names-file", ref testNamesFile);
+		watt.getopt(ref args, "results-file", ref resultsFile);
 
 		if (threads > 0) {
 			settings.numThreads = cast(u32) threads;
@@ -140,6 +139,9 @@ public:
 		}
 		if (testNamesFile !is null) {
 			settings.testNamesFile = testNamesFile;
+		}
+		if (resultsFile !is null) {
+			settings.resultsFile = resultsFile;
 		}
 	}
 
@@ -179,6 +181,14 @@ public:
 			ret = 1;
 		}
 
+		if (settings.resultsFile is null) {
+			info("Result file not supplied, use:");
+			info("\tArg:    --results-file X");
+			info("\tConfig: resultsFile=\"X\"");
+
+			ret = 1;
+		}
+
 		version (Linux)if (ret) {
 			info("dEQP will look for the config file here:");
 			info("\t%s%s%s", watt.getConfigHome(), watt.dirSeparator, ConfigFile);
@@ -187,5 +197,27 @@ public:
 			}
 		}
 		return ret;
+	}
+
+	fn writeResults()
+	{
+		info(" :: Writing results to '%s'", settings.resultsFile);
+
+		o := new watt.OutputFileStream(settings.resultsFile);
+		o.writefln("# Fail", results.numFail);
+		o.writefln("# InternalError", results.numInternalError);
+		o.writefln("# Incomplete", results.numIncomplete);
+		o.writefln("# NotSupported", results.numNotSupported);
+		o.writefln("# Pass", results.numPass);
+		o.writefln("# QualityWarning", results.numQualityWarning);
+		foreach (testGroup; results.groups) {
+			foreach (i, res; testGroup.results) {
+				o.write(new "${testGroup.tests[i]} ${res}\n");
+			}
+		}
+		o.flush();
+		o.close();
+		o = null;
+		info("\tDone");
 	}
 }

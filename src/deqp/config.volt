@@ -35,8 +35,14 @@ fn parseConfigFile(s: Settings)
 	if (root.hasKey("testNamesFile")) {
 		s.testNamesFile = root["testNamesFile"].str();
 	}
+	if (root.hasKey("resultsFile")) {
+		s.resultsFile = root["resultsFile"].str();
+	}
 	if (root.hasKey("hastyBatchSize")) {
 		s.hastyBatchSize = cast(u32) root["hastyBatchSize"].integer();
 		s.hasty = true;
+	}
+	if (root.hasKey("threads")) {
+		s.numThreads = cast(u32) root["threads"].integer();
 	}
 }

@@ -21,6 +21,62 @@ import deqp.sinks;
 import deqp.driver;
 
 
+enum Result
+{
+	Incomplete,
+	Fail,
+	NotSupported,
+	InternalError,
+	QualityWarning,
+	Pass,
+}
+
+struct Results
+{
+public:
+	numFail: u32;
+	numIncomplete: u32;
+	numInternalError: u32;
+	numNotSupported: u32;
+	numPass: u32;
+	numQualityWarning: u32;
+
+	groups: Group[];
+
+
+public:
+	fn getOk() u32
+	{
+		return numPass + numQualityWarning;
+	}
+
+	fn getSkip() u32
+	{
+		return numNotSupported;
+	}
+
+	fn getBad() u32
+	{
+		return numIncomplete + numFail + numInternalError;
+	}
+
+	fn count()
+	{
+		foreach (testGroup; groups) {
+			foreach (i, res; testGroup.results) {
+				final switch (res) with (Result) {
+				case Incomplete: numIncomplete++; break;
+				case Fail: numFail++; break;
+				case InternalError: numInternalError++; break;
+				case QualityWarning: numQualityWarning++; break;
+				case Pass: numPass++; break;
+				case NotSupported: numNotSupported++; break;
+				}
+			}
+		}
+	}
+}
+
 class Suite
 {
 public:
@@ -39,16 +95,6 @@ public:
 		command = new "${buildDir}${sep}modules${sep}gles2${sep}deqp-gles2";
 		runDir = new "${buildDir}${sep}external${sep}openglcts${sep}modules";
 	}
-}
-
-enum Result
-{
-	Incomplete,
-	Failed,
-	NotSupported,
-	InternalError,
-	QualityWarning,
-	Passed,
 }
 
 /*!
@@ -85,7 +131,6 @@ public:
 	{
 		writeTestsToFile();
 
-		info("Running tests %s %s", start, end);
 		args := [
 			new "--deqp-caselist-file=${fileTests}",
 			"--deqp-surface-type=window",
@@ -107,9 +152,9 @@ private:
 	fn done(retval: i32)
 	{
 		if (retval == 0) {
-			info("Done %s .. %s", start, end);
+			info("\tDone: %s .. %s", start, end);
 		} else {
-			info("Failed %s", retval);
+			info("\tFailed: %s .. %s, retval: %s", retval);
 		}
 
 		parseResults();
@@ -160,10 +205,10 @@ private:
 
 				if (iPass >= 0) {
 					//info("Pass %s", testCase);
-					results[index] = Result.Passed;
+					results[index] = Result.Pass;
 				} else if (iFail >= 0) {
 					//auto res = l[iFail + startFail.length .. $ - 2].idup;
-					results[index] = Result.Failed;
+					results[index] = Result.Fail;
 				} else if (iSupp >= 0) {
 					//info("!Sup %s", testCase);
 					results[index] = Result.NotSupported;
@@ -201,7 +246,7 @@ fn parseTestFile(s: Settings)
 	g3: StringsSink;
 	g31: StringsSink;
 
-	info("Reading test names from '%s'", s.testNamesFile);
+	info(" :: Reading test names from '%s'.", s.testNamesFile);
 
 	foreach (line; lines) {
 		if (watt.startsWith(line, "dEQP-GLES2")) {
@@ -229,5 +274,5 @@ fn parseTestFile(s: Settings)
 
 	s.tests = g2.toArray();
 
-	info("Done! Got %s tests", s.tests.length);
+	info("\tGot %s tests.", s.tests.length);
 }
