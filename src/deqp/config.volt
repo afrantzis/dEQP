@@ -44,6 +44,9 @@ fn parseConfigFile(s: Settings)
 		s.hastyBatchSize = cast(u32) root["hastyBatchSize"].integer();
 		s.hasty = true;
 	}
+	if (root.hasKey("tempDir")) {
+		s.tempDir = root["tempDir"].str();
+	}
 	if (root.hasKey("threads")) {
 		s.threads = cast(u32) root["threads"].integer();
 	}
