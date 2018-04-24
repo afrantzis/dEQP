@@ -37,7 +37,7 @@ public:
 	hasty: bool = true;
 	hastyBatchSize: u32;
 
-	numThreads: u32;
+	threads: u32;
 
 	tempDir: string = "/tmp/dEQP";
 }
@@ -72,7 +72,7 @@ public:
 		suite := new Suite(settings.ctsBuildDir, settings.tempDir);
 
 		// Create worker pool.
-		procs = new proc.Group(cast(u32) settings.numThreads);
+		procs = new proc.Group(cast(u32) settings.threads);
 
 		// Temporary directory.
 		watt.mkdirP(suite.tempDir);
@@ -129,7 +129,7 @@ public:
 		watt.getopt(ref args, "results-file", ref resultsFile);
 
 		if (threads > 0) {
-			settings.numThreads = cast(u32) threads;
+			settings.threads = cast(u32) threads;
 		}
 		if (hastyBatchSize > 0) {
 			settings.hastyBatchSize = cast(u32) hastyBatchSize;
@@ -149,7 +149,7 @@ public:
 	{
 		ret := 0;
 
-		if (settings.numThreads == 0) {
+		if (settings.threads == 0) {
 			info("Number of threads not supplied, use:");
 			info("\tArgument: --threads X");
 			info("\tConfig: threads=X");

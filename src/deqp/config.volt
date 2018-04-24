@@ -43,6 +43,6 @@ fn parseConfigFile(s: Settings)
 		s.hasty = true;
 	}
 	if (root.hasKey("threads")) {
-		s.numThreads = cast(u32) root["threads"].integer();
+		s.threads = cast(u32) root["threads"].integer();
 	}
 }
