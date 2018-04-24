@@ -253,6 +253,9 @@ fn parseTestFile(s: Settings)
 		abort(new "Test names file '${s.testNamesFile}' does not exists!");
 	}
 
+	info(" :: Gathering test names.");
+	info("\tReading file ´%s'.", s.testNamesFile);
+
 	file := cast(string) watt.read(s.testNamesFile);
 	lines := watt.splitLines(file);
 
@@ -260,8 +263,7 @@ fn parseTestFile(s: Settings)
 	g3: StringsSink;
 	g31: StringsSink;
 
-	info(" :: Reading test names from '%s'.", s.testNamesFile);
-
+	info("\tOrganizing tests.");
 	foreach (line; lines) {
 		if (watt.startsWith(line, "dEQP-GLES2")) {
 			g2.sink(line);
