@@ -154,7 +154,7 @@ private:
 		if (retval == 0) {
 			info("\tDone: %s .. %s", start, end);
 		} else {
-			info("\tFailed: %s .. %s, retval: %s", retval);
+			info("\tFailed: %s .. %s, retval: %s", start, end, retval);
 		}
 
 		parseResults();
@@ -190,9 +190,13 @@ private:
 				if (i < 0) {
 					continue;
 				} else {
-					testCase = new l[cast(size_t) i + HeaderName.length .. $ - 3];
+					testCase = l[cast(size_t) i + HeaderName.length .. $ - 3];
 					if (index >= tests.length || tests[index] != testCase) {
-						warn("Invalid tests config state?!");
+						warn("\t\tInvalid tests config state?!");
+						warn("\t\t%s %s", index, tests.length);
+						if (index < tests.length) {
+							warn("\t\t'%s' '%s'", tests[index], testCase);
+						}
 						return;
 					}
 				}
