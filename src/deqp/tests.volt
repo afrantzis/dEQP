@@ -60,6 +60,13 @@ public:
 		return numIncomplete + numFail + numInternalError;
 	}
 
+	fn getTotal() u32
+	{
+		return numFail + numIncomplete + numInternalError +
+		       numNotSupported + numPass + numQualityWarning +
+		       numIncomplete + numFail + numInternalError;
+	}
+
 	fn count()
 	{
 		foreach (testGroup; groups) {
@@ -87,12 +94,15 @@ public:
 	surfaceWidth: u32 = 256;
 	surfaceHeight: u32 = 256;
 
+	tests: string[];
+
 
 public:
-	this(buildDir: string, tempBaseDir: string)
+	this(buildDir: string, tempBaseDir: string, suffix: string, tests: string[])
 	{
-		tempDir = new "${tempBaseDir}${sep}GLES2";
-		command = new "${buildDir}${sep}modules${sep}gles2${sep}deqp-gles2";
+		this.tests = tests;
+		tempDir = new "${tempBaseDir}${sep}GLES${suffix}";
+		command = new "${buildDir}${sep}modules${sep}gles${suffix}${sep}deqp-gles${suffix}";
 		runDir = new "${buildDir}${sep}external${sep}openglcts${sep}modules";
 	}
 }
@@ -266,17 +276,9 @@ fn parseTestFile(s: Settings)
 		}
 	}
 
-	if ((g2.length > 0) +  (g3.length > 0) + (g31.length > 0) > 1) {
-		warn("Multiple testsuits not supported");
-	}
-	if (g3.length > 0) {
-		warn("GLES3 testsuit not supported");
-	}
-	if (g31.length > 0) {
-		warn("GLES31 testsuit not supported");
-	}
+	s.testsGLES2 = g2.toArray();
+	s.testsGLES3 = g3.toArray();
+	s.testsGLES31 = g31.toArray();
 
-	s.tests = g2.toArray();
-
-	info("\tGot %s tests.", s.tests.length);
+	info("\tGot %s tests.", s.testsGLES2.length + s.testsGLES3.length);
 }

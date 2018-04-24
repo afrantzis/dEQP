@@ -32,7 +32,6 @@ public:
 
 	testNamesFile: string;
 	ctsBuildDir: string;
-	tests: string[];
 
 	hasty: bool = true;
 	hastyBatchSize: u32;
@@ -40,6 +39,10 @@ public:
 	threads: u32;
 
 	tempDir: string = "/tmp/dEQP";
+
+	testsGLES2: string[];
+	testsGLES3: string[];
+	testsGLES31: string[];
 }
 
 /*!
@@ -71,35 +74,55 @@ public:
 		// All config is done read the tests file.
 		settings.parseTestFile();
 
-		// Looks up dependant paths and binaries.
-		suite := new Suite(settings.ctsBuildDir, settings.tempDir);
-
 		// Create worker pool.
 		procs = new proc.Group(cast(u32) settings.threads);
 
-		// Temporary directory.
-		watt.mkdirP(suite.tempDir);
-
-		// Set the correct working directory for running tests.
-		originalWorkingDirectory := watt.getcwd();
-		watt.chdir(suite.runDir);
 
 		// Run all of the tests.
 		info(" :: Running tests in groups of %s.", settings.hastyBatchSize);
-		tests := settings.tests;
-		groups: Group[];
-		count: u32;
-		while (count < tests.length) {
-			start := count + 1;
-			num := watt.min(tests.length - count, settings.hastyBatchSize);
-			subTests := new string[](num);
-			foreach (ref test; subTests) {
-				test = tests[count++];
-			}
 
-			group := new Group(suite, start, count, subTests);
-			group.run(procs);
-			results.groups ~= group;
+		// Organize the tests
+		suites: Suite[];
+		if (settings.testsGLES2.length > 0) {
+			tests := settings.testsGLES2;
+			suites ~= new Suite(settings.ctsBuildDir, settings.tempDir, "2", tests);
+		}
+		if (settings.testsGLES3.length > 0) {
+			tests := settings.testsGLES3;
+			suites ~= new Suite(settings.ctsBuildDir, settings.tempDir, "3", tests);
+		}
+		if (settings.testsGLES31.length > 0) {
+			tests := settings.testsGLES31;
+			suites ~= new Suite(settings.ctsBuildDir, settings.tempDir, "31", tests);
+		}
+
+
+		// Save the working directory as we change it for each suite.
+		originalWorkingDirectory := watt.getcwd();
+
+		// Loop over the testsuites
+		foreach (suite; suites) {
+			count: u32;
+			tests := suite.tests;
+
+			// Temporary directory.
+			watt.mkdirP(suite.tempDir);
+
+			// Set the correct working directory for running tests.
+			watt.chdir(suite.runDir);
+
+			while (count < tests.length) {
+				start := count + 1;
+				num := watt.min(tests.length - count, settings.hastyBatchSize);
+				subTests := new string[](num);
+				foreach (ref test; subTests) {
+					test = tests[count++];
+				}
+
+				group := new Group(suite, start, count, subTests);
+				group.run(procs);
+				results.groups ~= group;
+			}
 		}
 
 		// Wait for all test groups to complete.
@@ -111,7 +134,7 @@ public:
 		results.count();
 
 		info(" :: All test completed.");
-		info("\tok: %s, bad: %s, skip: %s, total: %s", results.getOk(), results.getBad(), results.getSkip(), tests.length);
+		info("\tok: %s, bad: %s, skip: %s, total: %s", results.getOk(), results.getBad(), results.getSkip(), results.getTotal());
 
 		// Write out the results
 		writeResults();
