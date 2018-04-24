@@ -65,6 +65,9 @@ public:
 			return ret;
 		}
 
+		// Tell the user what is going on.
+		printConfig(settings);
+
 		// All config is done read the tests file.
 		settings.parseTestFile();
 

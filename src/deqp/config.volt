@@ -5,10 +5,12 @@
  */
 module deqp.config;
 
-import deqp.driver;
-
 import watt = [watt.io.file, watt.xdg.basedir];
 import toml = watt.toml;
+
+import deqp.io;
+import deqp.driver;
+
 
 enum ConfigFile = "dEQP/config.toml";
 
@@ -45,4 +47,15 @@ fn parseConfigFile(s: Settings)
 	if (root.hasKey("threads")) {
 		s.threads = cast(u32) root["threads"].integer();
 	}
+}
+
+fn printConfig(s: Settings)
+{
+	info(" :: Config");
+	info("\ttestNamesFile  = '%s'"	, s.testNamesFile);
+	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
+	info("\thastyBatchSize = %s", s.hastyBatchSize);
+	info("\tthreads        = %s", s.threads);
+	info("\tresultsFile    = '%s'", s.resultsFile);
+	info("\ttempDir        = '%s'", s.tempDir);
 }
