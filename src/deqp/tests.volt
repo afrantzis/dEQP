@@ -87,6 +87,7 @@ public:
 class Suite
 {
 public:
+	drv: Driver;
 	command: string;
 	runDir: string;
 	tempDir: string;
@@ -98,8 +99,9 @@ public:
 
 
 public:
-	this(buildDir: string, tempBaseDir: string, suffix: string, tests: string[])
+	this(drv: Driver, buildDir: string, tempBaseDir: string, suffix: string, tests: string[])
 	{
+		this.drv = drv;
 		this.tests = tests;
 		tempDir = new "${tempBaseDir}${sep}GLES${suffix}";
 		command = new "${buildDir}${sep}modules${sep}gles${suffix}${sep}deqp-gles${suffix}";
@@ -113,6 +115,7 @@ public:
 class Group
 {
 public:
+	drv: Driver;
 	suite: Suite;
 	start: u32;
 	end: u32;
@@ -125,8 +128,9 @@ public:
 
 
 public:
-	this(suite: Suite, start: u32, end: u32, tests: string[])
+	this(drv: Driver, suite: Suite, start: u32, end: u32, tests: string[])
 	{
+		this.drv = drv;
 		this.suite = suite;
 		this.start = start;
 		this.end = end;
@@ -135,6 +139,10 @@ public:
 		this.fileCtsLog = new "${suite.tempDir}${sep}hasty_${start}.log";
 		this.fileConsole = new "${suite.tempDir}${sep}hasty_${start}.console";
 		this.results = new Result[](tests.length);
+
+		drv.removeOnExit(fileTests);
+		drv.removeOnExit(fileCtsLog);
+		drv.removeOnExit(fileConsole);
 	}
 
 	fn run(procs: proc.Group)
@@ -165,6 +173,8 @@ private:
 			info("\tDone: %s .. %s", start, end);
 		} else {
 			info("\tFailed: %s .. %s, retval: %s", start, end, retval);
+			drv.preserveOnExit(fileConsole);
+			drv.preserveOnExit(fileCtsLog);
 		}
 
 		parseResults();

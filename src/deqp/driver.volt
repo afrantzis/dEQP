@@ -7,7 +7,6 @@ module deqp.driver;
 
 import watt = [
 	watt.path,
-	watt.io.file,
 	watt.io.streams,
 	watt.algorithm,
 	watt.xdg.basedir,
@@ -15,6 +14,7 @@ import watt = [
 	];
 
 import proc = watt.process;
+import file = watt.io.file;
 
 import deqp.io;
 import deqp.tests;
@@ -55,6 +55,7 @@ public:
 	settings: Settings;
 	procs: proc.Group;
 	results: Results;
+	temporaryFiles: bool[string];
 
 
 public:
@@ -85,20 +86,20 @@ public:
 		suites: Suite[];
 		if (settings.testsGLES2.length > 0) {
 			tests := settings.testsGLES2;
-			suites ~= new Suite(settings.ctsBuildDir, settings.tempDir, "2", tests);
+			suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "2", tests);
 		}
 		if (settings.testsGLES3.length > 0) {
 			tests := settings.testsGLES3;
-			suites ~= new Suite(settings.ctsBuildDir, settings.tempDir, "3", tests);
+			suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "3", tests);
 		}
 		if (settings.testsGLES31.length > 0) {
 			tests := settings.testsGLES31;
-			suites ~= new Suite(settings.ctsBuildDir, settings.tempDir, "31", tests);
+			suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
 		}
 
 
 		// Save the working directory as we change it for each suite.
-		originalWorkingDirectory := watt.getcwd();
+		originalWorkingDirectory := file.getcwd();
 
 		// Loop over the testsuites
 		foreach (suite; suites) {
@@ -109,7 +110,7 @@ public:
 			watt.mkdirP(suite.tempDir);
 
 			// Set the correct working directory for running tests.
-			watt.chdir(suite.runDir);
+			file.chdir(suite.runDir);
 
 			while (count < tests.length) {
 				start := count + 1;
@@ -119,7 +120,7 @@ public:
 					test = tests[count++];
 				}
 
-				group := new Group(suite, start, count, subTests);
+				group := new Group(this, suite, start, count, subTests);
 				group.run(procs);
 				results.groups ~= group;
 			}
@@ -129,7 +130,7 @@ public:
 		procs.waitAll();
 
 		// Set the old working directory.
-		watt.chdir(originalWorkingDirectory);
+		file.chdir(originalWorkingDirectory);
 
 		results.count();
 
@@ -138,6 +139,9 @@ public:
 
 		// Write out the results
 		writeResults();
+
+		// Tidy after us.
+		removeTemporaryFiles();
 
 		info(" :: Exiting!");
 		return 0;
@@ -230,12 +234,12 @@ public:
 		info(" :: Writing results to '%s'", settings.resultsFile);
 
 		o := new watt.OutputFileStream(settings.resultsFile);
-		o.writefln("# Fail", results.numFail);
-		o.writefln("# InternalError", results.numInternalError);
-		o.writefln("# Incomplete", results.numIncomplete);
-		o.writefln("# NotSupported", results.numNotSupported);
-		o.writefln("# Pass", results.numPass);
-		o.writefln("# QualityWarning", results.numQualityWarning);
+		o.writefln("# Fail %s", results.numFail);
+		o.writefln("# InternalError %s", results.numInternalError);
+		o.writefln("# Incomplete %s", results.numIncomplete);
+		o.writefln("# NotSupported %s", results.numNotSupported);
+		o.writefln("# Pass %s", results.numPass);
+		o.writefln("# QualityWarning %s", results.numQualityWarning);
 		foreach (testGroup; results.groups) {
 			foreach (i, res; testGroup.results) {
 				o.write(new "${testGroup.tests[i]} ${res}\n");
@@ -245,5 +249,41 @@ public:
 		o.close();
 		o = null;
 		info("\tDone");
+	}
+
+	/*!
+	 * Remove temporary files.
+	 */
+	fn removeTemporaryFiles()
+	{
+		info(" :: Cleaning up.");
+		count: u32;
+		foreach (k, v; temporaryFiles) {
+			if (!v) {
+				info("\tSaved '%s'", k);
+			} else if (file.isFile(k)) {
+				count++;
+				file.remove(k);
+			}
+		}
+		info("\tRemoved %s file(s).", count);
+	}
+
+	/*!
+	 * Adds the file to the lists of files to be removed after close.
+	 */
+	fn removeOnExit(file: string) string
+	{
+		temporaryFiles[file] = true;
+		return file;
+	}
+
+	/*!
+	 * Don't remove the file on exit.
+	 */
+	fn preserveOnExit(file: string) string
+	{
+		temporaryFiles[file] = false;
+		return file;
 	}
 }
