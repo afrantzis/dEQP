@@ -153,7 +153,7 @@ public:
 			new "--deqp-caselist-file=${fileTests}",
 			"--deqp-surface-type=window",
 			new "--deqp-gl-config-name=${suite.config}",
-			"--deqp-log-images=disable",
+			"--deqp-log-images=enable",
 			"--deqp-watchdog=enable",
 			"--deqp-visibility=hidden",
 			new "--deqp-surface-width=${suite.surfaceWidth}",
@@ -202,6 +202,11 @@ private:
 	{
 		console := cast(string) watt.read(fileConsole);
 
+		map: u32[string];
+		foreach (index, test; tests) {
+			map[test] = cast(u32)index;
+		}
+
 		index: u32;
 		string testCase;
 		foreach (l; watt.splitLines(console)) {
@@ -211,14 +216,11 @@ private:
 					continue;
 				} else {
 					testCase = l[cast(size_t) i + HeaderName.length .. $ - 3];
-					if (index >= tests.length || tests[index] != testCase) {
-						warn("\t\tInvalid tests config state?!");
-						warn("\t\t%s %s", index, tests.length);
-						if (index < tests.length) {
-							warn("\t\t'%s' '%s'", tests[index], testCase);
-						}
-						return;
+					if (testCase in map is null) {
+						warn("\t\tCould not find test '%s'?!", testCase);
+						continue;
 					}
+					index = map[testCase];
 				}
 			} else {
 				auto iPass = watt.indexOf(l, HeaderPass);
