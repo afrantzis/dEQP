@@ -92,6 +92,7 @@ class Suite
 {
 public:
 	drv: Driver;
+	suffix: string;
 	command: string;
 	runDir: string;
 	tempDir: string;
@@ -108,6 +109,7 @@ public:
 	{
 		this.drv = drv;
 		this.tests = tests;
+		this.suffix = suffix;
 		this.results = new Result[](tests.length);
 		tempDir = new "${tempBaseDir}${sep}GLES${suffix}";
 		command = new "${buildDir}${sep}modules${sep}gles${suffix}${sep}deqp-gles${suffix}";
@@ -176,9 +178,9 @@ private:
 	fn done(retval: i32)
 	{
 		if (retval == 0) {
-			info("\tDone: %s", start);
+			info("\tGLES%s Done: %s .. %s", suite.suffix, start, offset + numTests);
 		} else {
-			info("\tFailed: %s, retval: %s", start, retval);
+			info("\tGLES%s Failed: %s .. %s, retval: %s", suite.suffix, start, offset + numTests, retval);
 			drv.preserveOnExit(fileConsole);
 			drv.preserveOnExit(fileCtsLog);
 		}
