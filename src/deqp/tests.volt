@@ -64,7 +64,7 @@ public:
 	{
 		return numFail + numIncomplete + numInternalError +
 		       numNotSupported + numPass + numQualityWarning +
-		       numIncomplete + numFail + numInternalError;
+		       numIncomplete + numInternalError;
 	}
 
 	fn count()
