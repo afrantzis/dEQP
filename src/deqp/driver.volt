@@ -277,20 +277,21 @@ public:
 
 		info(" :: Rerunning failed test(s).");
 
-		if ((total / 4) < bad) {
+		if ((total / 8) > (bad - inc)) {
 			mask |= 1u << Result.Fail;
 			mask |= 1u << Result.InternalError;
 		} else {
 			info("\tTo many failing tests %s", bad);
 		}
 
-		if ((total / 4) < inc) {
+		if ((total / 8) > inc) {
 			mask |= 1u << Result.Incomplete;
 		} else {
 			info("\tTo many incomplete tests %s", inc);
 		}
 
 		if (mask == 0) {
+			info("\tNot rerunning any tests as there are to many.");
 			return;
 		}
 
