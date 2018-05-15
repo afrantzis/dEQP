@@ -41,7 +41,7 @@ public:
 	numPass: u32;
 	numQualityWarning: u32;
 
-	groups: Group[];
+	suites: Suite[];
 
 
 public:
@@ -69,8 +69,12 @@ public:
 
 	fn count()
 	{
-		foreach (testGroup; groups) {
-			foreach (i, res; testGroup.results) {
+		// Reset the old numbers.
+		numFail = numIncomplete = numInternalError = numNotSupported =
+			numPass = numQualityWarning = 0;
+
+		foreach (suite; suites) {
+			foreach (i, res; suite.results) {
 				final switch (res) with (Result) {
 				case Incomplete: numIncomplete++; break;
 				case Fail: numFail++; break;
@@ -96,6 +100,7 @@ public:
 	surfaceHeight: u32 = 256;
 
 	tests: string[];
+	results: Result[];
 
 
 public:
@@ -103,6 +108,7 @@ public:
 	{
 		this.drv = drv;
 		this.tests = tests;
+		this.results = new Result[](tests.length);
 		tempDir = new "${tempBaseDir}${sep}GLES${suffix}";
 		command = new "${buildDir}${sep}modules${sep}gles${suffix}${sep}deqp-gles${suffix}";
 		runDir = new "${buildDir}${sep}external${sep}openglcts${sep}modules";
@@ -117,28 +123,27 @@ class Group
 public:
 	drv: Driver;
 	suite: Suite;
-	start: u32;
-	end: u32;
-	tests: string[];
-	results: Result[];
+	offset: u32;
+	numTests: u32;
 
 	fileCtsLog: string;
 	fileConsole: string;
 	fileTests: string;
 
+	//! Human readable starting number of test.
+	final @property fn start() u32 { return offset + 1; }
+
 
 public:
-	this(drv: Driver, suite: Suite, start: u32, end: u32, tests: string[])
+	this(drv: Driver, suite: Suite, offset: u32, numTests: u32)
 	{
 		this.drv = drv;
 		this.suite = suite;
-		this.start = start;
-		this.end = end;
-		this.tests = tests;
+		this.offset = offset;
+		this.numTests = numTests;
 		this.fileTests = new "${suite.tempDir}${sep}hasty_${start}.tests";
 		this.fileCtsLog = new "${suite.tempDir}${sep}hasty_${start}.log";
 		this.fileConsole = new "${suite.tempDir}${sep}hasty_${start}.console";
-		this.results = new Result[](tests.length);
 
 		drv.removeOnExit(fileTests);
 		drv.removeOnExit(fileCtsLog);
@@ -171,9 +176,9 @@ private:
 	fn done(retval: i32)
 	{
 		if (retval == 0) {
-			info("\tDone: %s .. %s", start, end);
+			info("\tDone: %s", start);
 		} else {
-			info("\tFailed: %s .. %s, retval: %s", start, end, retval);
+			info("\tFailed: %s, retval: %s", start, retval);
 			drv.preserveOnExit(fileConsole);
 			drv.preserveOnExit(fileCtsLog);
 		}
@@ -184,7 +189,7 @@ private:
 	fn writeTestsToFile()
 	{
 		f := new watt.OutputFileStream(fileTests);
-		foreach (t; tests) {
+		foreach (t; suite.tests[offset .. offset + numTests]) {
 			f.write(t);
 			f.write("\n");
 		}
@@ -204,8 +209,8 @@ private:
 		console := cast(string) watt.read(fileConsole);
 
 		map: u32[string];
-		foreach (index, test; tests) {
-			map[test] = cast(u32)index;
+		foreach (index, test; suite.tests[offset .. offset + numTests]) {
+			map[test] = cast(u32)index + offset;
 		}
 
 		index: u32;
@@ -232,19 +237,19 @@ private:
 
 				if (iPass >= 0) {
 					//info("Pass %s", testCase);
-					results[index] = Result.Pass;
+					suite.results[index] = Result.Pass;
 				} else if (iFail >= 0) {
 					//auto res = l[iFail + startFail.length .. $ - 2].idup;
-					results[index] = Result.Fail;
+					suite.results[index] = Result.Fail;
 				} else if (iSupp >= 0) {
 					//info("!Sup %s", testCase);
-					results[index] = Result.NotSupported;
+					suite.results[index] = Result.NotSupported;
 				} else if (iQual >= 0) {
 					//info("Qual %s", testCase);
-					results[index] = Result.QualityWarning;
+					suite.results[index] = Result.QualityWarning;
 				} else if (iIErr >= 0) {
 					//auto res = l[iIErr + startIErr.length .. $ - 2].idup;
-					results[index] = Result.InternalError;
+					suite.results[index] = Result.InternalError;
 				} else {
 					if (l.length > 0) {
 						continue;
@@ -295,5 +300,5 @@ fn parseTestFile(s: Settings)
 	s.testsGLES3 = g3.toArray();
 	s.testsGLES31 = g31.toArray();
 
-	info("\tGot %s tests.", s.testsGLES2.length + s.testsGLES3.length);
+	info("\tGot %s tests.", s.testsGLES2.length + s.testsGLES3.length + s.testsGLES31.length);
 }

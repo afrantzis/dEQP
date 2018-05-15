@@ -83,18 +83,17 @@ public:
 		info(" :: Running tests in groups of %s.", settings.hastyBatchSize);
 
 		// Organize the tests
-		suites: Suite[];
 		if (settings.testsGLES2.length > 0) {
 			tests := settings.testsGLES2;
-			suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "2", tests);
+			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "2", tests);
 		}
 		if (settings.testsGLES3.length > 0) {
 			tests := settings.testsGLES3;
-			suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "3", tests);
+			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "3", tests);
 		}
 		if (settings.testsGLES31.length > 0) {
 			tests := settings.testsGLES31;
-			suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
+			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
 		}
 
 
@@ -102,7 +101,7 @@ public:
 		originalWorkingDirectory := file.getcwd();
 
 		// Loop over the testsuites
-		foreach (suite; suites) {
+		foreach (suite; results.suites) {
 			count: u32;
 			tests := suite.tests;
 
@@ -113,16 +112,15 @@ public:
 			file.chdir(suite.runDir);
 
 			while (count < tests.length) {
-				start := count + 1;
+				offset := count;
 				num := watt.min(tests.length - count, settings.hastyBatchSize);
 				subTests := new string[](num);
 				foreach (ref test; subTests) {
 					test = tests[count++];
 				}
 
-				group := new Group(this, suite, start, count, subTests);
+				group := new Group(this, suite, offset, count - offset);
 				group.run(procs);
-				results.groups ~= group;
 			}
 		}
 
@@ -240,9 +238,9 @@ public:
 		o.writefln("# NotSupported %s", results.numNotSupported);
 		o.writefln("# Pass %s", results.numPass);
 		o.writefln("# QualityWarning %s", results.numQualityWarning);
-		foreach (testGroup; results.groups) {
-			foreach (i, res; testGroup.results) {
-				o.write(new "${testGroup.tests[i]} ${res}\n");
+		foreach (suite; results.suites) {
+			foreach (i, res; suite.results) {
+				o.write(new "${suite.tests[i]} ${res}\n");
 			}
 		}
 		o.flush();
