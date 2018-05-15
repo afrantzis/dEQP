@@ -163,6 +163,7 @@ public:
 
 		console := new watt.OutputFileStream(fileConsole);
 		procs.run(suite.command, args, watt.input, console, console, null, done);
+		console.close();
 	}
 
 
