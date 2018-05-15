@@ -287,10 +287,10 @@ fn parseTestFile(s: Settings)
 	foreach (line; lines) {
 		if (watt.startsWith(line, "dEQP-GLES2")) {
 			g2.sink(line);
-		} else if (watt.startsWith(line, "dEQP-GLES3")) {
-			g3.sink(line);
 		} else if (watt.startsWith(line, "dEQP-GLES31")) {
 			g31.sink(line);
+		} else if (watt.startsWith(line, "dEQP-GLES3")) {
+			g3.sink(line);
 		} else if (watt.startsWith(line, "#") || line.length == 0) {
 			/* nop */
 		} else {
