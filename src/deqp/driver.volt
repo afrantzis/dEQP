@@ -235,23 +235,68 @@ public:
 	}
 
 	//! Fuzzyish logic for test rerunning.
-	fn shouldRerunTests() bool
+	fn getRerunMask() u32
 	{
-		if (settings.hastyBatchSize == 1) {
-			return false;
+		total := results.getTotal();
+		bad := results.getBad();
+		inc := results.getIncomplete();
+		mask := 0x0_u32;
+		val := true;
+
+		// Early out to avoid printing info messages.
+		if (bad == 0 || settings.hastyBatchSize == 1) {
+			return 0;
 		}
 
-		return results.getBad() > 0;
+		info(" :: Rerunning failed test(s).");
+
+		if ((total / 4) < bad) {
+			mask |= 1u << Result.Fail;
+			mask |= 1u << Result.InternalError;
+		}
+
+		if ((total / 4) < inc) {
+			mask |= 1u << Result.Incomplete;
+		}
+
+		return mask;
 	}
 
 	fn rerunTests()
 	{
-		// Everything okay?
-		if (!shouldRerunTests()) {
+		total := results.getTotal();
+		bad := results.getBad();
+		inc := results.getIncomplete();
+		mask := 0x0_u32;
+		val := true;
+
+		// Early out to avoid printing info messages.
+		if (bad == 0 || settings.hastyBatchSize == 1) {
 			return;
 		}
 
 		info(" :: Rerunning failed test(s).");
+
+		if ((total / 4) < bad) {
+			mask |= 1u << Result.Fail;
+			mask |= 1u << Result.InternalError;
+		} else {
+			info("\tTo many failing tests %s", bad);
+		}
+
+		if ((total / 4) < inc) {
+			mask |= 1u << Result.Incomplete;
+		} else {
+			info("\tTo many incomplete tests %s", inc);
+		}
+
+		if (mask == 0) {
+			return;
+		}
+
+		// Flip bits
+		mask = ~mask;
+
 		foreach (suite; results.suites) {
 			// Temporary directory.
 			watt.mkdirP(suite.tempDir);
@@ -260,11 +305,8 @@ public:
 			file.chdir(suite.runDir);
 
 			foreach (offset, res; suite.results) {
-				final switch (res) with (Result) {
-				case NotSupported, QualityWarning, Pass:
+				if (mask & (1u << cast(u32) res)) {
 					continue;
-				case Incomplete, Fail, InternalError:
-					break;
 				}
 
 				group := new Group(this, suite, cast(u32) offset, 1);

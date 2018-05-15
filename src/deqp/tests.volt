@@ -60,6 +60,11 @@ public:
 		return numIncomplete + numFail + numInternalError;
 	}
 
+	fn getIncomplete() u32
+	{
+		return numIncomplete;
+	}
+
 	fn getTotal() u32
 	{
 		return numFail + numIncomplete + numInternalError +
