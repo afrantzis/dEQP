@@ -100,37 +100,14 @@ public:
 		// Save the working directory as we change it for each suite.
 		originalWorkingDirectory := file.getcwd();
 
-		// Loop over the testsuites
-		foreach (suite; results.suites) {
-			count: u32;
-			tests := suite.tests;
+		// The main body of work.
+		runTests();
 
-			// Temporary directory.
-			watt.mkdirP(suite.tempDir);
-
-			// Set the correct working directory for running tests.
-			file.chdir(suite.runDir);
-
-			while (count < tests.length) {
-				offset := count;
-				num := watt.min(tests.length - count, settings.hastyBatchSize);
-				subTests := new string[](num);
-				foreach (ref test; subTests) {
-					test = tests[count++];
-				}
-
-				group := new Group(this, suite, offset, count - offset);
-				group.run(procs);
-			}
-		}
-
-		// Wait for all test groups to complete.
-		procs.waitAll();
+		// Also checks if we should rerun the tests.
+		rerunTests();
 
 		// Set the old working directory.
 		file.chdir(originalWorkingDirectory);
-
-		results.count();
 
 		info(" :: All test completed.");
 		info("\tok: %s, bad: %s, skip: %s, total: %s", results.getOk(), results.getBad(), results.getSkip(), results.getTotal());
@@ -225,6 +202,81 @@ public:
 			}
 		}
 		return ret;
+	}
+
+	fn runTests()
+	{
+		// Loop over the testsuites
+		foreach (suite; results.suites) {
+			count: u32;
+			tests := suite.tests;
+
+			// Temporary directory.
+			watt.mkdirP(suite.tempDir);
+
+			// Set the correct working directory for running tests.
+			file.chdir(suite.runDir);
+
+			while (count < tests.length) {
+				offset := count;
+				num := cast(u32) watt.min(tests.length - count, settings.hastyBatchSize);
+
+				group := new Group(this, suite, offset, num);
+				group.run(procs);
+				count += num;
+			}
+		}
+
+		// Wait for all test groups to complete.
+		procs.waitAll();
+
+		// Count the results.
+		results.count();
+	}
+
+	//! Fuzzyish logic for test rerunning.
+	fn shouldRerunTests() bool
+	{
+		if (settings.hastyBatchSize == 1) {
+			return false;
+		}
+
+		return results.getBad() > 0;
+	}
+
+	fn rerunTests()
+	{
+		// Everything okay?
+		if (!shouldRerunTests()) {
+			return;
+		}
+
+		info(" :: Rerunning failed test(s).");
+		foreach (suite; results.suites) {
+			// Temporary directory.
+			watt.mkdirP(suite.tempDir);
+
+			// Set the correct working directory for running tests.
+			file.chdir(suite.runDir);
+
+			foreach (offset, res; suite.results) {
+				final switch (res) with (Result) {
+				case NotSupported, QualityWarning, Pass:
+					continue;
+				case Incomplete, Fail, InternalError:
+					break;
+				}
+
+				group := new Group(this, suite, cast(u32) offset, 1);
+				group.run(procs);
+			}
+		}
+
+		// Wait for all test groups to complete.
+		procs.waitAll();
+
+		// Recount the results
+		results.count();
 	}
 
 	fn writeResults()
