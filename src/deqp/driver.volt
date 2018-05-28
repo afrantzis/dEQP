@@ -13,13 +13,13 @@ import watt = [
 	watt.text.getopt,
 	];
 
-import proc = watt.process;
 import file = watt.io.file;
 
 import deqp.io;
 import deqp.tests;
 import deqp.driver;
 import deqp.config;
+import deqp.launcher;
 
 
 /*!
@@ -53,7 +53,7 @@ class Driver
 {
 public:
 	settings: Settings;
-	procs: proc.Group;
+	launcher: Launcher;
 	results: Results;
 	temporaryFiles: bool[string];
 
@@ -76,7 +76,7 @@ public:
 		settings.parseTestFile();
 
 		// Create worker pool.
-		procs = new proc.Group(cast(u32) settings.threads);
+		launcher = new Launcher(cast(u32) settings.threads);
 
 
 		// Run all of the tests.
@@ -222,13 +222,13 @@ public:
 				num := cast(u32) watt.min(tests.length - count, settings.hastyBatchSize);
 
 				group := new Group(this, suite, offset, num);
-				group.run(procs);
+				group.run(launcher);
 				count += num;
 			}
 		}
 
 		// Wait for all test groups to complete.
-		procs.waitAll();
+		launcher.waitAll();
 
 		// Count the results.
 		results.count();
@@ -311,12 +311,12 @@ public:
 				}
 
 				group := new Group(this, suite, cast(u32) offset, 1);
-				group.run(procs);
+				group.run(launcher);
 			}
 		}
 
 		// Wait for all test groups to complete.
-		procs.waitAll();
+		launcher.waitAll();
 
 		// Recount the results
 		results.count();

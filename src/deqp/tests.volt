@@ -14,11 +14,11 @@ import watt = [
 	];
 
 import watt.path : sep = dirSeparator;
-import proc = watt.process;
 
 import deqp.io;
 import deqp.sinks;
 import deqp.driver;
+import deqp.launcher;
 
 
 enum Result
@@ -157,12 +157,10 @@ public:
 		drv.removeOnExit(fileConsole);
 	}
 
-	fn run(procs: proc.Group)
+	fn run(launcher: Launcher)
 	{
-		writeTestsToFile();
-
 		args := [
-			new "--deqp-caselist-file=${fileTests}",
+			"--deqp-stdin-caselist",
 			"--deqp-surface-type=window",
 			new "--deqp-gl-config-name=${suite.config}",
 			"--deqp-log-images=enable",
@@ -174,7 +172,7 @@ public:
 		];
 
 		console := new watt.OutputFileStream(fileConsole);
-		procs.run(suite.command, args, watt.input, console, console, null, done);
+		launcher.run(suite.command, args, suite.tests[offset .. offset + numTests], console, done);
 		console.close();
 	}
 
