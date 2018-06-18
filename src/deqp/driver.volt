@@ -63,9 +63,9 @@ public:
 	{
 		settings = new Settings();
 		parseConfigFile(settings);
-		parseArgs(args);
+		parseArgs(settings, args);
 
-		if (ret := checkArgs()) {
+		if (ret := checkArgs(settings)) {
 			return ret;
 		}
 
@@ -120,92 +120,6 @@ public:
 
 		info(" :: Exiting!");
 		return 0;
-	}
-
-	fn parseArgs(args: string[])
-	{
-		threads, hastyBatchSize: i32;
-		testNamesFile, ctsBuildDir, resultsFile, tempDir: string;
-
-		watt.getopt(ref args, "threads", ref threads);
-		watt.getopt(ref args, "hasty-batch-size", ref hastyBatchSize);
-		watt.getopt(ref args, "cts-build-dir", ref ctsBuildDir);
-		watt.getopt(ref args, "test-names-file", ref testNamesFile);
-		watt.getopt(ref args, "results-file", ref resultsFile);
-		watt.getopt(ref args, "temp-dir", ref tempDir);
-
-		if (threads > 0) {
-			settings.threads = cast(u32) threads;
-		}
-		if (hastyBatchSize > 0) {
-			settings.hastyBatchSize = cast(u32) hastyBatchSize;
-		}
-		if (ctsBuildDir !is null) {
-			settings.ctsBuildDir = ctsBuildDir;
-		}
-		if (testNamesFile !is null) {
-			settings.testNamesFile = testNamesFile;
-		}
-		if (resultsFile !is null) {
-			settings.resultsFile = resultsFile;
-		}
-		if (tempDir !is null) {
-			settings.tempDir = tempDir;
-		}
-	}
-
-	fn checkArgs() i32
-	{
-		ret := 0;
-
-		if (settings.threads == 0) {
-			info("Number of threads not supplied, use:");
-			info("\tArgument: --threads X");
-			info("\tConfig: threads=X");
-
-			ret = 1;
-		}
-
-		if (settings.hastyBatchSize == 0) {
-			info("Hasty batch size not supplied, use:");
-			info("\tArg:    --hasty-batch-size X");
-			info("\tConfig: hastyBatchSize=X");
-
-			ret = 1;
-		}
-
-		if (settings.ctsBuildDir is null) {
-			info("CTS build dir not supplied, use:");
-			info("\tArg:    --cts-build-dir X");
-			info("\tConfig: ctsBuildDir=\"X\"");
-
-			ret = 1;
-		}
-
-		if (settings.testNamesFile is null) {
-			info("Test names file not supplied, use:");
-			info("\tArg:    --test-names-file X");
-			info("\tConfig: testNamesFile=\"X\"");
-
-			ret = 1;
-		}
-
-		if (settings.resultsFile is null) {
-			info("Result file not supplied, use:");
-			info("\tArg:    --results-file X");
-			info("\tConfig: resultsFile=\"X\"");
-
-			ret = 1;
-		}
-
-		version (Linux)if (ret) {
-			info("dEQP will look for the config file here:");
-			info("\t%s%s%s", watt.getConfigHome(), watt.dirSeparator, ConfigFile);
-			foreach (dir; watt.getConfigDirs()) {
-				info("\t%s%s%s", dir, watt.dirSeparator, ConfigFile);
-			}
-		}
-		return ret;
 	}
 
 	fn runTests()

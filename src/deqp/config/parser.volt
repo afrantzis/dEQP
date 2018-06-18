@@ -3,7 +3,7 @@
 /*!
  * This file holds code for reading the configuration file.
  */
-module deqp.config;
+module deqp.config.parser;
 
 import watt = [watt.io.file, watt.xdg.basedir];
 import toml = watt.toml;
@@ -50,15 +50,4 @@ fn parseConfigFile(s: Settings)
 	if (root.hasKey("threads")) {
 		s.threads = cast(u32) root["threads"].integer();
 	}
-}
-
-fn printConfig(s: Settings)
-{
-	info(" :: Config");
-	info("\ttestNamesFile  = '%s'"	, s.testNamesFile);
-	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
-	info("\thastyBatchSize = %s", s.hastyBatchSize);
-	info("\tthreads        = %s", s.threads);
-	info("\tresultsFile    = '%s'", s.resultsFile);
-	info("\ttempDir        = '%s'", s.tempDir);
 }
