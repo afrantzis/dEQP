@@ -16,6 +16,7 @@ import deqp.config.info;
 
 fn parseArgs(settings: Settings, args: string[])
 {
+	printFailing: bool;
 	threads, hastyBatchSize: i32;
 	testNamesFile, ctsBuildDir, resultsFile, tempDir: string;
 
@@ -25,6 +26,7 @@ fn parseArgs(settings: Settings, args: string[])
 	watt.getopt(ref args, "test-names-file", ref testNamesFile);
 	watt.getopt(ref args, "results-file", ref resultsFile);
 	watt.getopt(ref args, "temp-dir", ref tempDir);
+	watt.getopt(ref args, "print-failing", ref printFailing);
 
 	if (threads > 0) {
 		settings.threads = cast(u32) threads;
@@ -43,6 +45,9 @@ fn parseArgs(settings: Settings, args: string[])
 	}
 	if (tempDir !is null) {
 		settings.tempDir = tempDir;
+	}
+	if (printFailing) {
+		settings.printFailing = printFailing;
 	}
 
 	if (args.length > 1) {

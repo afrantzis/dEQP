@@ -50,4 +50,7 @@ fn parseConfigFile(s: Settings)
 	if (root.hasKey("threads")) {
 		s.threads = cast(u32) root["threads"].integer();
 	}
+	if (root.hasKey("printFailing")) {
+		s.printFailing = root["printFailing"].boolean();
+	}
 }

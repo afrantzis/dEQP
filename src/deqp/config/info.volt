@@ -19,7 +19,8 @@ import deqp.config.parser;
 fn printConfig(s: Settings)
 {
 	info(" :: Config");
-	info("\ttestNamesFile  = '%s'"	, s.testNamesFile);
+	info("\tprintFailing   = %s", s.printFailing);
+	info("\ttestNamesFile  = '%s'", s.testNamesFile);
 	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
 	info("\thastyBatchSize = %s", s.hastyBatchSize);
 	info("\tthreads        = %s", s.threads);
@@ -29,6 +30,7 @@ fn printConfig(s: Settings)
 
 fn printAllArgsAndConfig()
 {
+	printFailing();
 	printThreads();
 	printHastyBatchSize();
 	printCtsBuildDir();
@@ -82,11 +84,18 @@ fn checkArgs(settings: Settings) i32
 
 private:
 
+fn printFailing(suffix: string = ":")
+{
+	info("Print the failing tests", suffix);
+	info("\tArgument: --print-failing");
+	info("\tConfig:   printFailing=[true|false]");
+}
+
 fn printThreads(suffix: string = ":")
 {
 	info("Number of threads%s", suffix);
 	info("\tArgument: --threads X");
-	info("\tConfig: threads=X");
+	info("\tConfig:   threads=X");
 }
 
 fn printHastyBatchSize(suffix: string = ":")

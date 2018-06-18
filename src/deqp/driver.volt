@@ -36,6 +36,8 @@ public:
 	hasty: bool = true;
 	hastyBatchSize: u32;
 
+	printFailing: bool = false;
+
 	threads: u32;
 
 	tempDir: string = "/tmp/dEQP";
