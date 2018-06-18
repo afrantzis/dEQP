@@ -79,15 +79,23 @@ public:
 private:
 	fn done(retval: i32)
 	{
-		if (retval == 0) {
+		if (numTests != 1 && retval == 0) {
 			info("\tGLES%s Done: %s .. %s", suite.suffix, start, offset + numTests);
-		} else {
+		} else if (numTests != 1) {
 			info("\tGLES%s Failed: %s .. %s, retval: %s", suite.suffix, start, offset + numTests, retval);
 			drv.preserveOnExit(fileConsole);
 			drv.preserveOnExit(fileCtsLog);
 		}
 
 		parseResults();
+
+		if (numTests == 1 && retval == 0) {
+			info("\tGLES%s Done: %s", suite.suffix, suite.tests[offset]);
+		} else if (numTests == 1) {
+			info("\tGLES%s Failed: %s, retval: %s", suite.suffix, suite.tests[offset], retval);
+			drv.preserveOnExit(fileConsole);
+			drv.preserveOnExit(fileCtsLog);
+		}
 	}
 
 	fn writeTestsToFile()
