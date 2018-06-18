@@ -120,6 +120,20 @@ public:
 		// Tidy after us.
 		removeTemporaryFiles();
 
+		if (settings.printFailing) {
+			info(" :: Printing failing tests.");
+			foreach (suit; results.suites) {
+				foreach (i, res; suit.results) {
+					final switch (res) with (Result) {
+					case Pass, NotSupported, QualityWarning: break;
+					case Incomplete, Fail, InternalError:
+						info("%s", new "${suit.tests[i]} ${res}");
+						break;
+					}
+				}
+			}
+		}
+
 		info(" :: Exiting!");
 		return 0;
 	}
