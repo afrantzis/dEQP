@@ -53,4 +53,7 @@ fn parseConfigFile(s: Settings)
 	if (root.hasKey("printFailing")) {
 		s.printFailing = root["printFailing"].boolean();
 	}
+	if (root.hasKey("regressionFile")) {
+		s.resultsFile = root["regressionFile"].str();
+	}
 }

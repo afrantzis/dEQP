@@ -21,6 +21,7 @@ fn printConfig(s: Settings)
 	info(" :: Config");
 	info("\tprintFailing   = %s", s.printFailing);
 	info("\ttestNamesFile  = '%s'", s.testNamesFile);
+	info("\tregressionFile = '%s'", s.regressionFile);
 	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
 	info("\thastyBatchSize = %s", s.hastyBatchSize);
 	info("\tthreads        = %s", s.threads);
@@ -38,6 +39,7 @@ fn printAllArgsAndConfig()
 	printResultsFile();
 	printTempDir();
 	printConfigFile();
+	printRegressionFile();
 }
 
 fn checkArgs(settings: Settings) i32
@@ -131,6 +133,13 @@ fn printTempDir(suffix: string = ":")
 	info("Temp dir%s", suffix);
 	info("\tArg:    --temp-dir X");
 	info("\tConfig: tempDir=\"X\"");
+}
+
+fn printRegressionFile(suffix: string = ":")
+{
+	info("Check for regressions in the give file file%s", suffix);
+	info("\tArg:    --check X | --regression-file X");
+	info("\tConfig: regressionFile=\"X\"");
 }
 
 fn printConfigFile()

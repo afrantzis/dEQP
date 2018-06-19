@@ -42,6 +42,8 @@ public:
 
 	tempDir: string = "/tmp/dEQP";
 
+	regressionFile: string;
+
 	testsGLES2: string[];
 	testsGLES3: string[];
 	testsGLES31: string[];

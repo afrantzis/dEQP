@@ -18,7 +18,7 @@ fn parseArgs(settings: Settings, args: string[])
 {
 	printFailing: bool;
 	threads, hastyBatchSize: i32;
-	testNamesFile, ctsBuildDir, resultsFile, tempDir: string;
+	testNamesFile, ctsBuildDir, resultsFile, tempDir, regressionFile: string;
 
 	watt.getopt(ref args, "threads", ref threads);
 	watt.getopt(ref args, "hasty-batch-size", ref hastyBatchSize);
@@ -27,6 +27,7 @@ fn parseArgs(settings: Settings, args: string[])
 	watt.getopt(ref args, "results-file", ref resultsFile);
 	watt.getopt(ref args, "temp-dir", ref tempDir);
 	watt.getopt(ref args, "print-failing", ref printFailing);
+	watt.getopt(ref args, "check|regression-file", ref regressionFile);
 
 	if (threads > 0) {
 		settings.threads = cast(u32) threads;
@@ -48,6 +49,9 @@ fn parseArgs(settings: Settings, args: string[])
 	}
 	if (printFailing) {
 		settings.printFailing = printFailing;
+	}
+	if (regressionFile) {
+		settings.regressionFile = regressionFile;
 	}
 
 	if (args.length > 1) {
