@@ -14,10 +14,11 @@ import watt = [
 import watt.path : sep = dirSeparator;
 
 import deqp.io;
+import deqp.sinks;
 import deqp.driver;
 import deqp.launcher;
 
-import deqp.tests.suit;
+import deqp.tests.test;
 import deqp.tests.result;
 
 
@@ -71,7 +72,13 @@ public:
 		];
 
 		console := new watt.OutputFileStream(fileConsole);
-		launcher.run(suite.command, args, suite.tests[offset .. offset + numTests], console, done);
+
+		sss: StringsSink;
+		foreach (test; suite.tests[offset .. offset + numTests]) {
+			sss.sink(test.name);
+		}
+
+		launcher.run(suite.command, args, sss.toArray(), console, done);
 		console.close();
 	}
 
@@ -90,9 +97,9 @@ private:
 		parseResults();
 
 		if (numTests == 1 && retval == 0) {
-			info("\tGLES%s Done: %s", suite.suffix, suite.tests[offset]);
+			info("\tGLES%s Done: %s", suite.suffix, suite.tests[offset].name);
 		} else if (numTests == 1) {
-			info("\tGLES%s Failed: %s, retval: %s", suite.suffix, suite.tests[offset], retval);
+			info("\tGLES%s Failed: %s, retval: %s", suite.suffix, suite.tests[offset].name, retval);
 			drv.preserveOnExit(fileConsole);
 			drv.preserveOnExit(fileCtsLog);
 		}
@@ -102,7 +109,7 @@ private:
 	{
 		f := new watt.OutputFileStream(fileTests);
 		foreach (t; suite.tests[offset .. offset + numTests]) {
-			f.write(t);
+			f.write(t.name);
 			f.write("\n");
 		}
 		f.flush();
@@ -122,7 +129,7 @@ private:
 
 		map: u32[string];
 		foreach (index, test; suite.tests[offset .. offset + numTests]) {
-			map[test] = cast(u32)index + offset;
+			map[test.name] = cast(u32)index + offset;
 		}
 
 		index: u32;
@@ -149,19 +156,19 @@ private:
 
 				if (iPass >= 0) {
 					//info("Pass %s", testCase);
-					suite.results[index] = Result.Pass;
+					suite.tests[index].result = Result.Pass;
 				} else if (iFail >= 0) {
 					//auto res = l[iFail + startFail.length .. $ - 2].idup;
-					suite.results[index] = Result.Fail;
+					suite.tests[index].result = Result.Fail;
 				} else if (iSupp >= 0) {
 					//info("!Sup %s", testCase);
-					suite.results[index] = Result.NotSupported;
+					suite.tests[index].result = Result.NotSupported;
 				} else if (iQual >= 0) {
 					//info("Qual %s", testCase);
-					suite.results[index] = Result.QualityWarning;
+					suite.tests[index].result = Result.QualityWarning;
 				} else if (iIErr >= 0) {
 					//auto res = l[iIErr + startIErr.length .. $ - 2].idup;
-					suite.results[index] = Result.InternalError;
+					suite.tests[index].result = Result.InternalError;
 				} else {
 					if (l.length > 0) {
 						continue;

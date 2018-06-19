@@ -5,7 +5,7 @@
  */
 module deqp.tests.result;
 
-import deqp.tests.suit;
+import deqp.tests.test;
 
 
 enum Result
@@ -66,8 +66,8 @@ public:
 			numPass = numQualityWarning = 0;
 
 		foreach (suite; suites) {
-			foreach (i, res; suite.results) {
-				final switch (res) with (Result) {
+			foreach (test; suite.tests) {
+				final switch (test.result) with (Result) {
 				case Incomplete: numIncomplete++; break;
 				case Fail: numFail++; break;
 				case InternalError: numInternalError++; break;

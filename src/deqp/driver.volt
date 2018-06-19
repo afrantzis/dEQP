@@ -123,11 +123,11 @@ public:
 		if (settings.printFailing) {
 			info(" :: Printing failing tests.");
 			foreach (suit; results.suites) {
-				foreach (i, res; suit.results) {
-					final switch (res) with (Result) {
+				foreach (test; suit.tests) {
+					final switch (test.result) with (Result) {
 					case Pass, NotSupported, QualityWarning: break;
 					case Incomplete, Fail, InternalError:
-						info("%s", new "${suit.tests[i]} ${res}");
+						info("%s", new "${test.name} ${test.result}");
 						break;
 					}
 				}
@@ -239,8 +239,8 @@ public:
 			// Set the correct working directory for running tests.
 			file.chdir(suite.runDir);
 
-			foreach (offset, res; suite.results) {
-				if (mask & (1u << cast(u32) res)) {
+			foreach (offset, test; suite.tests) {
+				if (mask & (1u << cast(u32) test.result)) {
 					continue;
 				}
 
@@ -268,8 +268,8 @@ public:
 		o.writefln("# Pass %s", results.numPass);
 		o.writefln("# QualityWarning %s", results.numQualityWarning);
 		foreach (suite; results.suites) {
-			foreach (i, res; suite.results) {
-				o.write(new "${suite.tests[i]} ${res}\n");
+			foreach (test; suite.tests) {
+				o.write(new "${test.name} ${test.result}\n");
 			}
 		}
 		o.flush();
