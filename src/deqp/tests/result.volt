@@ -15,30 +15,33 @@ enum Result
 	NotSupported,
 	InternalError,
 	QualityWarning,
+	CompatibilityWarning,
 	Pass,
 }
 
 fn isResultPassing(result: Result) bool
 {
 	final switch (result) with (Result) {
-	case Incomplete:     return false;
-	case Fail:           return false;
-	case NotSupported:   return false;
-	case InternalError:  return false;
-	case QualityWarning: return true;
-	case Pass:           return true;
+	case Incomplete:           return false;
+	case Fail:                 return false;
+	case NotSupported:         return false;
+	case InternalError:        return false;
+	case QualityWarning:       return true;
+	case CompatibilityWarning: return true;
+	case Pass:                 return true;
 	}
 }
 
 fn isResultFailing(result: Result) bool
 {
 	final switch (result) with (Result) {
-	case Incomplete:     return true;
-	case Fail:           return true;
-	case NotSupported:   return false;
-	case InternalError:  return true;
-	case QualityWarning: return false;
-	case Pass:           return false;
+	case Incomplete:           return true;
+	case Fail:                 return true;
+	case NotSupported:         return false;
+	case InternalError:        return true;
+	case QualityWarning:       return false;
+	case CompatibilityWarning: return false;
+	case Pass:                 return false;
 	}
 }
 
@@ -60,6 +63,7 @@ public:
 	numNotSupported: u32;
 	numPass: u32;
 	numQualityWarning: u32;
+	numCompatibilityWarning: u32;
 
 	suites: Suite[];
 
@@ -67,7 +71,7 @@ public:
 public:
 	fn getOk() u32
 	{
-		return numPass + numQualityWarning;
+		return numPass + numQualityWarning + numCompatibilityWarning;
 	}
 
 	fn getSkip() u32
@@ -89,14 +93,16 @@ public:
 	{
 		return numFail + numIncomplete + numInternalError +
 		       numNotSupported + numPass + numQualityWarning +
-		       numIncomplete + numInternalError;
+		       numIncomplete + numInternalError +
+		       numCompatibilityWarning;
 	}
 
 	fn count()
 	{
 		// Reset the old numbers.
 		numFail = numIncomplete = numInternalError = numNotSupported =
-			numPass = numQualityWarning = 0;
+			numPass = numQualityWarning =
+			numCompatibilityWarning =  0;
 
 		foreach (suite; suites) {
 			foreach (test; suite.tests) {
@@ -105,6 +111,7 @@ public:
 				case Fail: numFail++; break;
 				case InternalError: numInternalError++; break;
 				case QualityWarning: numQualityWarning++; break;
+				case CompatibilityWarning: numCompatibilityWarning++; break;
 				case Pass: numPass++; break;
 				case NotSupported: numNotSupported++; break;
 				}

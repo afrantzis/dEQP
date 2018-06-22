@@ -158,12 +158,13 @@ fn splitNameAndResult(text: string, out name: string, out result: string) string
 fn parseResult(text: string) Result
 {
 	switch (text) {
-	case "Incomplete":     return Result.Incomplete;
-	case "Fail":           return Result.Fail;
-	case "NotSupported":   return Result.NotSupported;
-	case "InternalError":  return Result.InternalError;
-	case "QualityWarning": return Result.QualityWarning;
-	case "Pass":           return Result.Pass;
-	default:               return Result.Incomplete;
+	case "Incomplete":           return Result.Incomplete;
+	case "Fail":                 return Result.Fail;
+	case "NotSupported":         return Result.NotSupported;
+	case "InternalError":        return Result.InternalError;
+	case "QualityWarning":       return Result.QualityWarning;
+	case "CompatibilityWarning": return Result.CompatibilityWarning;
+	case "Pass":                 return Result.Pass;
+	default:                     return Result.Incomplete;
 	}
 }

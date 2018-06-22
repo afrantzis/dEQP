@@ -122,6 +122,7 @@ private:
 	enum HeaderFail = "Fail (";
 	enum HeaderSupp = "NotSupported (";
 	enum HeaderQual = "QualityWarning (";
+	enum HeaderComp = "CompatibilityWarning (";
 
 	fn parseResults()
 	{
@@ -153,6 +154,7 @@ private:
 				auto iSupp = watt.indexOf(l, HeaderSupp);
 				auto iQual = watt.indexOf(l, HeaderQual);
 				auto iIErr = watt.indexOf(l, HeaderIErr);
+				auto iComp = watt.indexOf(l, HeaderComp);
 
 				if (iPass >= 0) {
 					//info("Pass %s", testCase);
@@ -169,6 +171,9 @@ private:
 				} else if (iIErr >= 0) {
 					//auto res = l[iIErr + startIErr.length .. $ - 2].idup;
 					suite.tests[index].result = Result.InternalError;
+				} else if (iComp >= 0) {
+					//auto res = l[iComp + startComp.length .. $ - 2].idup;
+					suite.tests[index].result = Result.CompatibilityWarning;
 				} else {
 					if (l.length > 0) {
 						continue;
