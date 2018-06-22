@@ -265,6 +265,7 @@ public:
 		o.writefln("# NotSupported %s", results.numNotSupported);
 		o.writefln("# Pass %s", results.numPass);
 		o.writefln("# QualityWarning %s", results.numQualityWarning);
+		o.writefln("# CompatibilityWarning %s", results.numCompatibilityWarning);
 		foreach (suite; results.suites) {
 			foreach (test; suite.tests) {
 				o.write(new "${test.name} ${test.result}\n");
