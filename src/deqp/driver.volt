@@ -120,18 +120,9 @@ public:
 		// Tidy after us.
 		removeTemporaryFiles();
 
+		// Print failing tests?
 		if (settings.printFailing) {
-			info(" :: Printing failing tests.");
-			foreach (suit; results.suites) {
-				foreach (test; suit.tests) {
-					final switch (test.result) with (Result) {
-					case Pass, NotSupported, QualityWarning: break;
-					case Incomplete, Fail, InternalError:
-						info("%s", new "${test.name} ${test.result}");
-						break;
-					}
-				}
-			}
+			printResultsToStdout(results.suites);
 		}
 
 		info(" :: Exiting!");

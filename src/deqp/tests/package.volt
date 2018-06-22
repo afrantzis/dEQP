@@ -6,6 +6,7 @@
 module deqp.tests;
 
 public import deqp.tests.test;
+public import deqp.tests.info;
 public import deqp.tests.result;
 public import deqp.tests.parser;
 public import deqp.tests.runner;
