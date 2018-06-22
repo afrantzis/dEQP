@@ -36,6 +36,21 @@ public:
 	@property fn result(r: Result) Result { if (ptr !is null) ptr.result = r; return r; }
 	@property fn compare(r: Result) Result { if (ptr !is null) ptr.compare = r; return r; }
 
+	fn hasRegressed() bool
+	{
+		return isResultAndCompareRegression(result, compare);
+	}
+
+	fn hasPassed() bool
+	{
+		return isResultPassing(result);
+	}
+
+	fn hasFailed() bool
+	{
+		return isResultFailing(result);
+	}
+
 	fn set(name: string)
 	{
 		arr := new char[](TestData.Size + name.length + 1);

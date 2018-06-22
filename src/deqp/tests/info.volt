@@ -16,11 +16,10 @@ fn printResultsToStdout(suites: Suite[])
 	info(" :: Printing failing tests.");
 	foreach (suit; suites) {
 		foreach (test; suit.tests) {
-			final switch (test.result) with (Result) {
-			case Pass, NotSupported, QualityWarning: break;
-			case Incomplete, Fail, InternalError:
+			if (test.hasRegressed()) {
+				info("%s", new "${test.name} ${test.result} (REGRESSION! ${test.compare})");
+			} else if (test.hasFailed()) {
 				info("%s", new "${test.name} ${test.result}");
-				break;
 			}
 		}
 	}

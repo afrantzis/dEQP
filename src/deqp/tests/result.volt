@@ -18,6 +18,39 @@ enum Result
 	Pass,
 }
 
+fn isResultPassing(result: Result) bool
+{
+	final switch (result) with (Result) {
+	case Incomplete:     return false;
+	case Fail:           return false;
+	case NotSupported:   return false;
+	case InternalError:  return false;
+	case QualityWarning: return true;
+	case Pass:           return true;
+	}
+}
+
+fn isResultFailing(result: Result) bool
+{
+	final switch (result) with (Result) {
+	case Incomplete:     return true;
+	case Fail:           return true;
+	case NotSupported:   return false;
+	case InternalError:  return true;
+	case QualityWarning: return false;
+	case Pass:           return false;
+	}
+}
+
+fn isResultAndCompareRegression(result: Result, compare: Result) bool
+{
+	if (result.isResultFailing()) {
+		return isResultPassing(compare);
+	} else {
+		return false;
+	}
+}
+
 struct Results
 {
 public:

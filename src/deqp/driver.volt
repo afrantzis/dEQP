@@ -122,13 +122,18 @@ public:
 		// Tidy after us.
 		removeTemporaryFiles();
 
-		// Print failing tests?
-		if (settings.printFailing) {
+		// Regrssion checking or print failing tests?
+		ret: i32;
+		if (settings.regressionFile) {
+			ret = parseAndCheckRegressions(results.suites, settings.regressionFile);
+		}
+
+		if (settings.printFailing || settings.regressionFile !is null) {
 			printResultsToStdout(results.suites);
 		}
 
 		info(" :: Exiting!");
-		return 0;
+		return ret;
 	}
 
 	fn runTests()
