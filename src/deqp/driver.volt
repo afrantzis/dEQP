@@ -114,7 +114,7 @@ public:
 		file.chdir(originalWorkingDirectory);
 
 		info(" :: All test completed.");
-		info("\tok: %s, bad: %s, skip: %s, total: %s", results.getOk(), results.getBad(), results.getSkip(), results.getTotal());
+		info("\tok: %s, warn: %s, bad: %s, skip: %s, total: %s", results.getPass(), results.getWarn(), results.getBad(), results.getSkip(), results.getTotal());
 
 		// Write out the results
 		writeResults();

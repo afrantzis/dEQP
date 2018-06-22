@@ -69,19 +69,24 @@ public:
 
 
 public:
-	fn getOk() u32
+	fn getPass() u32
 	{
-		return numPass + numQualityWarning + numCompatibilityWarning;
+		return numPass;
 	}
 
-	fn getSkip() u32
+	fn getWarn() u32
 	{
-		return numNotSupported;
+		return numQualityWarning + numCompatibilityWarning;
 	}
 
 	fn getBad() u32
 	{
 		return numIncomplete + numFail + numInternalError;
+	}
+
+	fn getSkip() u32
+	{
+		return numNotSupported;
 	}
 
 	fn getIncomplete() u32
