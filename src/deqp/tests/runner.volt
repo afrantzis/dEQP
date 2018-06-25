@@ -8,6 +8,7 @@ module deqp.tests.runner;
 import watt = [
 	watt.io.file,
 	watt.io.streams,
+	watt.text.sink,
 	watt.text.string,
 	];
 
@@ -72,12 +73,13 @@ public:
 
 		console := new watt.OutputFileStream(fileConsole);
 
-		sss: StringsSink;
+		ss: watt.StringSink;
 		foreach (test; tests) {
-			sss.sink(test.name);
+			ss.sink(test.name);
+			ss.sink("\n");
 		}
 
-		launcher.run(suite.command, args, sss.toArray(), console, done);
+		launcher.run(suite.command, args, ss.toString(), console, done);
 		console.close();
 	}
 

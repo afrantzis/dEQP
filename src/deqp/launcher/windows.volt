@@ -17,7 +17,7 @@ public:
 	{
 	}
 
-	void run(cmd: string, args: string[], tests: string[], console: watt.OutputFileStream, done: dg(i32))
+	void run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, done: dg(i32))
 	{
 	}
 

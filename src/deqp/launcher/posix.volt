@@ -25,7 +25,7 @@ public:
 		mProcs = new proc.Group(numThreads);
 	}
 
-	void run(cmd: string, args: string[], tests: string[], console: watt.OutputFileStream, done: dg(i32))
+	void run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, done: dg(i32))
 	{
 		fds: i32[2];
 		if (ret := posix.pipe(ref fds)) {
@@ -45,10 +45,7 @@ public:
 		posix.close(readFD);
 
 		// Write the tests to the file descriptor.
-		foreach (test; tests) {
-			posix.write(writeFD, cast(void*) test.ptr, test.length);
-			posix.write(writeFD, cast(void*) "\n".ptr, 1);
-		}
+		posix.write(writeFD, cast(void*) input.ptr, input.length);
 
 		// Close the input side.
 		posix.close(writeFD);
