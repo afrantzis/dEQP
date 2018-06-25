@@ -8,6 +8,7 @@ module deqp.driver;
 import watt = [
 	watt.path,
 	watt.io.streams,
+	watt.io.monotonic,
 	watt.algorithm,
 	watt.xdg.basedir,
 	watt.text.getopt,
@@ -138,6 +139,8 @@ public:
 
 	fn runTests()
 	{
+		gs: GroupSink;
+
 		// Loop over the testsuites
 		foreach (suite; results.suites) {
 			count: u32;
@@ -156,11 +159,22 @@ public:
 				group := new Group(this, suite, tests[offset .. offset + num], offset);
 				group.run(launcher);
 				count += num;
+				gs.sink(group);
 			}
 		}
 
 		// Wait for all test groups to complete.
 		launcher.waitAll();
+
+		// As the info string says.
+		info(" :: Reading results");
+		then := watt.ticks();
+		foreach (group; gs.toArray()) {
+			group.readResults();
+		}
+		now := watt.ticks();
+		ms := watt.convClockFreq(now - then, watt.ticksPerSecond, 1000);
+		info("\tDone in %s.%03sms", ms / 1000, ms % 1000);
 
 		// Count the results.
 		results.count();

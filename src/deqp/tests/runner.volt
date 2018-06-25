@@ -81,6 +81,11 @@ public:
 		console.close();
 	}
 
+	fn readResults()
+	{
+		parseResultsAndAssign(fileConsole, tests);
+	}
+
 
 private:
 	fn done(retval: i32)
@@ -104,7 +109,7 @@ private:
 			drv.preserveOnExit(fileConsole);
 			drv.preserveOnExit(fileCtsLog);
 		}
-
-		parseResultsAndAssign(fileConsole, tests);
 	}
 }
+
+struct GroupSink = mixin SinkStruct!Group;
