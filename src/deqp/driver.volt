@@ -153,7 +153,7 @@ public:
 				offset := count;
 				num := cast(u32) watt.min(tests.length - count, settings.hastyBatchSize);
 
-				group := new Group(this, suite, offset, num);
+				group := new Group(this, suite, tests[offset .. offset + num], offset);
 				group.run(launcher);
 				count += num;
 			}
@@ -242,7 +242,7 @@ public:
 					continue;
 				}
 
-				group := new Group(this, suite, cast(u32) offset, 1);
+				group := new Group(this, suite, suite.tests[offset .. offset + 1], cast(u32) offset);
 				group.run(launcher);
 			}
 		}
