@@ -6,13 +6,17 @@
 module deqp.tests.runner;
 
 import watt = [
+	watt.path,
 	watt.io.file,
 	watt.io.streams,
+	watt.algorithm,
 	watt.text.sink,
 	watt.text.string,
 	];
 
 import watt.path : sep = dirSeparator;
+
+import file = watt.io.file;
 
 import deqp.io;
 import deqp.sinks;
@@ -23,6 +27,111 @@ import deqp.tests.test;
 import deqp.tests.result;
 import deqp.tests.parser;
 
+
+fn dispatch(drv: Driver, suites: Suite[])
+{
+	s: Scheduler;
+	foreach (suite; suites) {
+		s.numTests += suite.tests.length;
+
+		foreach (test; suite.tests) {
+			s.store[test.name] = test;
+		}
+	}
+
+
+	// Store temporary groups.
+	gs: GroupSink;
+
+	foreach (suite; suites) {
+		numDispatched: size_t;
+		offset: size_t;
+		tests := suite.tests;
+
+		// Temporary directory.
+		watt.mkdirP(suite.tempDir);
+
+		// Set the correct working directory for running tests.
+		file.chdir(suite.runDir);
+
+		{
+			group := new Group(drv, suite, tests[1 .. 3], cast(u32) 1);
+			tests[1].started = true;
+			tests[2].started = true;
+			group.run(drv.launcher);
+			numDispatched += 2;
+			gs.sink(group);
+		}
+
+		while (offset < tests.length) {
+			while (tests[offset].started) {
+				offset++;
+			}
+
+			if (offset >= tests.length) {
+				break;
+			}
+
+			size := calcBatchSize(s.numTests, numDispatched, 20);
+			num := watt.min(tests.length - offset, size);
+
+			// Don't run tests multiple times.
+			foreach (i, test; tests[offset .. offset + num]) {
+				if (test.started) {
+					num = i;
+					break;
+				}
+
+				test.started = true;
+			}
+
+			group := new Group(drv, suite, tests[offset .. offset + num], cast(u32) offset);
+			group.run(drv.launcher);
+			offset += num;
+			numDispatched += num;
+			gs.sink(group);
+		}
+	}
+
+	// Wait for all test groups to complete.
+	drv.launcher.waitAll();
+
+	// As the function says.
+	drv.readResults(gs.toArray());
+}
+
+fn launch(ref gs: GroupSink)
+{
+	
+}
+
+import io = watt.io;
+
+fn calcBatchSize(numTests: size_t, numDispatched: size_t, numThreads: size_t) size_t
+{
+	left := numTests - numDispatched;
+	if (left <= 4) {
+		return left;
+	}
+
+	size: size_t = 512;
+	while (((size * numThreads * 4) > left) && size > 4) {
+		size = size >> 1;
+	}
+
+	io.writefln("aa %s %s %s", numTests, numDispatched, size);
+	io.output.flush();
+	return size;
+}
+
+/*!
+ * Schedules tests in a slightly more optimized way.
+ */
+struct Scheduler
+{
+	store: Test[string];
+	numTests: size_t;
+}
 
 /*!
  * A group of tests to be given to the testsuit.
