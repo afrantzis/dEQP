@@ -30,14 +30,7 @@ import deqp.tests.parser;
 
 fn dispatch(drv: Driver, suites: Suite[])
 {
-	s := new Scheduler(drv);
-	foreach (suite; suites) {
-		s.numTests += suite.tests.length;
-
-		foreach (test; suite.tests) {
-			s.store[test.name] = test;
-		}
-	}
+	s := new Scheduler(drv, suites);
 
 	foreach (suite; suites) {
 		// Temporary directory.
@@ -49,8 +42,14 @@ fn dispatch(drv: Driver, suites: Suite[])
 		// Create a secheduling struct for the current suite.
 		current: Current;
 		current.setup(s, suite);
+		if (suite.suffix == "2") {
+			current.runSingle("dEQP-GLES2.functional.flush_finish.wait");
+			current.runStartsWith("dEQP-GLES2.functional.vertex_arrays.multiple_attributes");
+		}
 		current.runRest();
 	}
+
+	info("\tWaiting for test batchs to complete.");
 
 	// Wait for all test groups to complete.
 	drv.launcher.waitAll();
@@ -160,7 +159,6 @@ private:
 final class Scheduler
 {
 public:
-	store: Test[string];
 	drv: Driver;
 	launcher: Launcher;
 
@@ -178,10 +176,14 @@ public:
 
 
 public:
-	this(drv: Driver)
+	this(drv: Driver, suites: Suite[])
 	{
 		this.drv = drv;
 		this.launcher = drv.launcher;
+
+		foreach (suite; suites) {
+			numTests += suite.tests.length;
+		}
 	}
 
 	fn calcBatchSize(max: size_t) size_t
@@ -216,6 +218,7 @@ public:
 struct Current
 {
 public:
+	store: size_t[string];
 	tests: Test[];
 	suite: Suite;
 	offset: size_t;
@@ -231,15 +234,120 @@ public:
 		this.suite = suite;
 		this.offset = 0;
 		this.started = new bool[](tests.length);
+
+		foreach (i, test; suite.tests) {
+			store[test.name] = i;
+		}
 	}
 
-	fn markAndReturn(i1: size_t, i2: size_t) Test[]
+	fn runSingle(test: string)
 	{
-		foreach (i; i1 .. i2) {
-			started[i] = true;
+		ptr := test in store;
+		if (ptr is null) {
+			return;
 		}
 
-		return tests[i1 .. i2];
+		i := *ptr;
+		if (started[i]) {
+			return;
+		}
+
+		// Inform the user.
+		info("\tScheduling test '%s'.", test);
+
+		// Launch the tests.
+		batch(i, i + 1, 1);
+	}
+
+	fn runStartsWith(str: string)
+	{
+		// Skip to first matching test.
+		offset = 0;
+		skipStartedOrNotMatching(str);
+
+		// Early out if we didn't find any tests.
+		if (offset >= tests.length) {
+			return;
+		}
+
+		// Inform the user.
+		info("\tScheduling tests starting with '%s'.", str);
+
+		while (offset < tests.length) {
+			start := offset;
+			skipNotStartedAndMatching(str);
+			end := offset;
+
+			if (start == end) {
+				break;
+			}
+
+			// These tests are probably slow,
+			// run them in small batches.
+			batch(start, end, 4);
+
+			skipStartedOrNotMatching(str);
+		}
+	}
+
+	fn runRest()
+	{
+		// Skip to first matching test.
+		offset = 0;
+		skipStarted();
+
+		// Early out if we didn't find any tests.
+		if (offset >= tests.length) {
+			return;
+		}
+
+		// Inform the user.
+		info("\tScheduling all remaining GLES%s tests.", suite.suffix);
+
+		while (offset < tests.length) {
+			start := offset;
+			skipNotStarted();
+			end := offset;
+			if (start == end) {
+				break;
+			}
+
+			batch(start, end, 1024);
+
+			skipStarted();
+		}
+	}
+
+
+private:
+	fn skipStarted()
+	{
+		while (offset < started.length && started[offset]) {
+			offset++;
+		}
+	}
+
+	fn skipNotStarted()
+	{
+		while (offset < started.length && !started[offset]) {
+			offset++;
+		}
+	}
+
+	fn skipStartedOrNotMatching(str: string)
+	{
+		while (offset < started.length && (started[offset] ||
+		       !watt.startsWith(tests[offset].name, str))) {
+			offset++;
+		}
+	}
+
+	fn skipNotStartedAndMatching(str: string)
+	{
+		while (offset < started.length && !started[offset] &&
+		       watt.startsWith(tests[offset].name, str)) {
+			offset++;
+		}
 	}
 
 	fn batch(i1: size_t, i2: size_t, max: size_t)
@@ -259,35 +367,12 @@ public:
 		}
 	}
 
-	fn runRest()
+	fn markAndReturn(i1: size_t, i2: size_t) Test[]
 	{
-		skipStarted();
-
-		while (offset < tests.length) {
-			start := offset;
-			skipNotStarted();
-			num := offset - start;
-			if (num == 0) {
-				break;
-			}
-
-			batch(start, num, 1024);
-
-			skipStarted();
+		foreach (i; i1 .. i2) {
+			started[i] = true;
 		}
-	}
 
-	fn skipStarted()
-	{
-		while (offset < started.length && started[offset]) {
-			offset++;
-		}
-	}
-
-	fn skipNotStarted()
-	{
-		while (offset < started.length && !started[offset]) {
-			offset++;
-		}
+		return tests[i1 .. i2];
 	}
 }
