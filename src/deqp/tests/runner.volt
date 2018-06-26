@@ -215,6 +215,9 @@ public:
 	}
 }
 
+/*!
+ * Struct holding states for scheduling tests from a Suite.
+ */
 struct Current
 {
 public:
@@ -240,6 +243,9 @@ public:
 		}
 	}
 
+	/*!
+	 * Start a single test of the extact name.
+	 */
 	fn runSingle(test: string)
 	{
 		ptr := test in store;
@@ -259,6 +265,10 @@ public:
 		batch(i, i + 1, 1);
 	}
 
+	/*!
+	 * Schedule tests starting with the given string,
+	 * in smaller batches then normal.
+	 */
 	fn runStartsWith(str: string)
 	{
 		// Skip to first matching test.
@@ -290,6 +300,9 @@ public:
 		}
 	}
 
+	/*!
+	 * Schedule all remaining tests.
+	 */
 	fn runRest()
 	{
 		// Skip to first matching test.
