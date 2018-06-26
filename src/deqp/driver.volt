@@ -166,15 +166,8 @@ public:
 		// Wait for all test groups to complete.
 		launcher.waitAll();
 
-		// As the info string says.
-		info(" :: Reading results");
-		then := watt.ticks();
-		foreach (group; gs.toArray()) {
-			group.readResults();
-		}
-		now := watt.ticks();
-		ms := watt.convClockFreq(now - then, watt.ticksPerSecond, 1000);
-		info("\tDone in %s.%03sms", ms / 1000, ms % 1000);
+		// As the function says.
+		readResults(gs.toArray());
 
 		// Count the results.
 		results.count();
@@ -244,6 +237,10 @@ public:
 		// Flip bits
 		mask = ~mask;
 
+		// Store temporary groups.
+		gs: GroupSink;
+
+		// Finally dispatch all failing tests.
 		foreach (suite; results.suites) {
 			// Temporary directory.
 			watt.mkdirP(suite.tempDir);
@@ -258,14 +255,33 @@ public:
 
 				group := new Group(this, suite, suite.tests[offset .. offset + 1], cast(u32) offset);
 				group.run(launcher);
+				gs.sink(group);
 			}
 		}
 
 		// Wait for all test groups to complete.
 		launcher.waitAll();
 
+		// As the function says.
+		readResults(gs.toArray());
+
 		// Recount the results
 		results.count();
+	}
+
+	fn readResults(groups: scope Group[])
+	{
+		// As the info string says.
+		info(" :: Reading results");
+		then := watt.ticks();
+
+		foreach (group; groups) {
+			group.readResults();
+		}
+
+		now := watt.ticks();
+		ms := watt.convClockFreq(now - then, watt.ticksPerSecond, 1000);
+		info("\tDone in %s.%03sms", ms / 1000, ms % 1000);
 	}
 
 	fn writeResults()
