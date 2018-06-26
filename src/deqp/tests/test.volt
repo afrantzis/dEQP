@@ -22,6 +22,7 @@ private:
 		result: Result;
 		compare: Result;
 		size: u32;
+		started: bool;
 	}
 
 
@@ -33,8 +34,10 @@ public:
 	@property fn name() string { return ptr is null ? null : (cast(immutable(char)*) &ptr[1])[0 .. ptr.size]; }
 	@property fn result() Result { return ptr is null ? cast(Result) Result.init : ptr.result; }
 	@property fn compare() Result { return ptr is null ? cast(Result) Result.init : ptr.compare; }
+	@property fn started() bool { return ptr is null ? false : ptr.started; }
 	@property fn result(r: Result) Result { if (ptr !is null) ptr.result = r; return r; }
 	@property fn compare(r: Result) Result { if (ptr !is null) ptr.compare = r; return r; }
+	@property fn started(r: bool) bool { if (ptr !is null) ptr.started = r; return r; }
 
 	fn hasRegressed() bool
 	{

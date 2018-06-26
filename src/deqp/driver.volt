@@ -142,32 +142,13 @@ public:
 		gs: GroupSink;
 
 		// Loop over the testsuites
-		foreach (suite; results.suites) {
-			count: u32;
-			tests := suite.tests;
+		dispatch(this, results.suites);
 
-			// Temporary directory.
-			watt.mkdirP(suite.tempDir);
+/*
 
-			// Set the correct working directory for running tests.
-			file.chdir(suite.runDir);
+*/
 
-			while (count < tests.length) {
-				offset := count;
-				num := cast(u32) watt.min(tests.length - count, settings.hastyBatchSize);
 
-				group := new Group(this, suite, tests[offset .. offset + num], offset);
-				group.run(launcher);
-				count += num;
-				gs.sink(group);
-			}
-		}
-
-		// Wait for all test groups to complete.
-		launcher.waitAll();
-
-		// As the function says.
-		readResults(gs.toArray());
 
 		// Count the results.
 		results.count();
