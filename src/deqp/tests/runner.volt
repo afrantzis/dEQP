@@ -183,11 +183,15 @@ public:
 
 
 public:
-	enum MinBatchSize = 4u;
-	enum Break32 = 8192u;
-	enum Break16 = 4096u;
-	enum Break_8 = 512u;
-	enum Break_4 = 128u;
+	enum MinBatchSize = Step4Size;
+
+	enum Step1Left = 8192u;
+	enum Step1Size = 64u;
+	enum Step2Left = 4096u;
+	enum Step2Size = 32u;
+	enum Step3Left = 512u;
+	enum Step3Size = 16u;
+	enum Step4Size = 4u;
 
 
 public:
@@ -205,16 +209,14 @@ public:
 	{
 		left := numTests - numDispatched;
 
-		if (left > Break32) {
-			return 64;
-		} else if (left > Break16) {
-			return 32;
-		} else if (left > Break_8) {
-			return 16;
-		} else if (left > Break_4) {
-			return 8;
-		} else if (left > 4) {
-			return 4;
+		if (left > Step1Left) {
+			return Step1Size;
+		} else if (left > Step2Left) {
+			return Step2Size;
+		} else if (left > Step3Left) {
+			return Step3Size;
+		} else if (left > Step4Size) {
+			return Step4Size;
 		} else {
 			return left;
 		}
