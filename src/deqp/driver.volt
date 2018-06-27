@@ -80,12 +80,11 @@ public:
 		// All config is done read the tests file.
 		settings.parseTestFile();
 
+		// Save the working directory as we change it for each suite.
+		originalWorkingDirectory := file.getcwd();
+
 		// Create worker pool.
 		launcher = new Launcher(cast(u32) settings.threads);
-
-
-		// Run all of the tests.
-		info(" :: Running tests in groups of %s.", settings.hastyBatchSize);
 
 		// Organize the tests
 		if (settings.testsGLES2.length > 0) {
@@ -100,10 +99,6 @@ public:
 			tests := settings.testsGLES31;
 			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
 		}
-
-
-		// Save the working directory as we change it for each suite.
-		originalWorkingDirectory := file.getcwd();
 
 		// The main body of work.
 		runTests();
@@ -139,16 +134,11 @@ public:
 
 	fn runTests()
 	{
-		gs: GroupSink;
+		// Run all of the tests.
+		info(" :: Running tests.", settings.hastyBatchSize);
 
 		// Loop over the testsuites
 		dispatch(this, results.suites);
-
-/*
-
-*/
-
-
 
 		// Count the results.
 		results.count();
