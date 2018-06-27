@@ -42,11 +42,15 @@ fn dispatch(drv: Driver, suites: Suite[])
 		// Create a secheduling struct for the current suite.
 		current: Current;
 		current.setup(s, suite);
-		if (suite.suffix == "2") {
+		if (drv.settings.hastyBatchSize != 0) {
+			current.runRest(drv.settings.hastyBatchSize);
+		} else if (suite.suffix == "2") {
 			current.runSingle("dEQP-GLES2.functional.flush_finish.wait");
 			current.runStartsWith("dEQP-GLES2.functional.vertex_arrays.multiple_attributes");
+			current.runRest();
+		} else {
+			current.runRest();
 		}
-		current.runRest();
 	}
 
 	info("\tWaiting for test batchs to complete.");
@@ -169,6 +173,7 @@ public:
 
 
 public:
+	enum MinBatchSize = 4u;
 	enum Break32 = 8192u;
 	enum Break16 = 4096u;
 	enum Break_8 = 512u;
@@ -186,22 +191,22 @@ public:
 		}
 	}
 
-	fn calcBatchSize(max: size_t) size_t
+	fn calcBatchSize() size_t
 	{
 		left := numTests - numDispatched;
 
 		if (left > Break32) {
-			return watt.min(max, 64);
+			return 64;
 		} else if (left > Break16) {
-			return watt.min(max, 32);
+			return 32;
 		} else if (left > Break_8) {
-			return watt.min(max, 16);
+			return 16;
 		} else if (left > Break_4) {
-			return watt.min(max, 8);
+			return 8;
 		} else if (left > 4) {
-			return watt.min(max, 4);
+			return 4;
 		} else {
-			return watt.min(left, max);
+			return left;
 		}
 	}
 
@@ -261,8 +266,9 @@ public:
 		// Inform the user.
 		info("\tScheduling test '%s'.", test);
 
-		// Launch the tests.
-		batch(i, i + 1, 1);
+		// Launch the test, no need to give batch size since
+		// it is only one test anyways.
+		batch(i, i + 1);
 	}
 
 	/*!
@@ -303,7 +309,7 @@ public:
 	/*!
 	 * Schedule all remaining tests.
 	 */
-	fn runRest()
+	fn runRest(batchSize: size_t = 0u)
 	{
 		// Skip to first matching test.
 		offset = 0;
@@ -325,7 +331,7 @@ public:
 				break;
 			}
 
-			batch(start, end, 1024);
+			batch(start, end, batchSize);
 
 			skipStarted();
 		}
@@ -363,20 +369,21 @@ private:
 		}
 	}
 
-	fn batch(i1: size_t, i2: size_t, max: size_t)
+	fn batch(i1: size_t, i2: size_t, batchSize: size_t = 0)
 	{
 		offset := i1;
 		tests := this.tests[0 .. i2];
 
 		while (offset < tests.length) {
-			size := s.calcBatchSize(max);
+			left := tests.length - offset;
+			size := batchSize != 0 ? batchSize : s.calcBatchSize();
+			size = watt.min(left, size);
 
-			num := watt.min(tests.length - offset, size);
-			t := markAndReturn(offset, offset + num);
+			t := markAndReturn(offset, offset + size);
 
 			s.launch(suite, t, cast(u32) offset);
 
-			offset += num;
+			offset += size;
 		}
 	}
 
