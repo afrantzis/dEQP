@@ -44,11 +44,20 @@ fn dispatch(drv: Driver, suites: Suite[])
 		// Create a secheduling struct for the current suite.
 		current: Current;
 		current.setup(s, suite);
+
 		if (drv.settings.hastyBatchSize != 0) {
 			current.runRest(drv.settings.hastyBatchSize);
 		} else if (suite.suffix == "2") {
 			current.runSingle("dEQP-GLES2.functional.flush_finish.wait");
 			current.runStartsWith("dEQP-GLES2.functional.vertex_arrays.multiple_attributes");
+			current.runRest();
+		} else if (suite.suffix == "3") {
+			// Run as separate tests.
+			current.runStartsWith("dEQP-GLES3.functional.flush_finish", 1);
+			current.runStartsWith("dEQP-GLES3.functional.shaders.builtin_functions.precision", 8);
+			current.runStartsWith("dEQP-GLES3.functional.vertex_arrays.multiple_attributes", 8);
+			current.runStartsWith("dEQP-GLES3.functional.vertex_arrays.single_attribute", 8);
+			current.runStartsWith("dEQP-GLES3.functional.rasterization", 16);
 			current.runRest();
 		} else {
 			current.runRest();
