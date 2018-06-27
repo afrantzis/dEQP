@@ -23,7 +23,7 @@ fn printConfig(s: Settings)
 	info("\ttestNamesFile  = '%s'", s.testNamesFile);
 	info("\tregressionFile = '%s'", s.regressionFile);
 	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
-	info("\thastyBatchSize = %s", s.hastyBatchSize);
+	info("\thastyBatchSize = %s%s", s.hastyBatchSize, s.hastyBatchSize == 0 ? " (smart mode)" : "");
 	info("\tthreads        = %s", s.threads);
 	info("\tresultsFile    = '%s'", s.resultsFile);
 	info("\ttempDir        = '%s'", s.tempDir);
@@ -48,11 +48,6 @@ fn checkArgs(settings: Settings) i32
 
 	if (settings.threads == 0) {
 		printThreads(" not supplied, use:");
-		ret = 1;
-	}
-
-	if (settings.hastyBatchSize == 0) {
-		printHastyBatchSize(" not supplied, use:");
 		ret = 1;
 	}
 
@@ -103,6 +98,7 @@ fn printThreads(suffix: string = ":")
 fn printHastyBatchSize(suffix: string = ":")
 {
 	info("Hasty batch size%s", suffix);
+	info("\tUse 0 for smart mode.");
 	info("\tArg:    --hasty-batch-size X");
 	info("\tConfig: hastyBatchSize=X");
 }
