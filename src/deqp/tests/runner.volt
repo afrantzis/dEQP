@@ -12,6 +12,8 @@ import watt = [
 	watt.algorithm,
 	watt.text.sink,
 	watt.text.string,
+	watt.text.format,
+	watt.io.monotonic,
 	];
 
 import watt.path : sep = dirSeparator;
@@ -77,6 +79,8 @@ public:
 	fileTests: string;
 	tests: Test[];
 
+	timeStart, timeStop: i64;
+
 
 public:
 	this(drv: Driver, suite: Suite, tests: Test[], offset: u32)
@@ -117,6 +121,8 @@ public:
 			ss.sink("\n");
 		}
 
+		timeStart = watt.ticks();
+
 		launcher.run(suite.command, args, ss.toString(), console, done);
 		console.close();
 	}
@@ -130,19 +136,23 @@ public:
 private:
 	fn done(retval: i32)
 	{
+		timeStop = watt.ticks();
+		ms := watt.convClockFreq(timeStop - timeStart, watt.ticksPerSecond, 1000);
+		time := watt.format(" (%s.%03ss)", ms / 1000, ms % 1000);
+
 		if (retval == 0) {
 			// The test run completed okay.
 			if (tests.length == 1) {
-				info("\tGLES%s Done: %s", suite.suffix, tests[0].name);
+				info("\tGLES%s Done: %s%s", suite.suffix, tests[0].name, time);
 			} else {
-				info("\tGLES%s Done: %s .. %s", suite.suffix, start, end);
+				info("\tGLES%s Done: %s .. %s%s", suite.suffix, start, end, time);
 			}
 		} else {
 			// The test run didn't complete.
 			if (tests.length == 1) {
-				info("\tGLES%s Failed: %s, retval: %s", suite.suffix, tests[0].name, retval);
+				info("\tGLES%s Failed: %s, retval: %s%s", suite.suffix, tests[0].name, retval, time);
 			} else {
-				info("\tGLES%s Failed: %s .. %s, retval: %s", suite.suffix, start, end, retval);
+				info("\tGLES%s Failed: %s .. %s, retval: %s%s", suite.suffix, start, end, retval, time);
 			}
 
 			// Preserve some files so the user can investigate.
