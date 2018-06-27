@@ -287,7 +287,7 @@ public:
 	 * Schedule tests starting with the given string,
 	 * in smaller batches then normal.
 	 */
-	fn runStartsWith(str: string)
+	fn runStartsWith(str: string, batchSize: size_t = 4u)
 	{
 		// Skip to first matching test.
 		offset = 0;
@@ -310,9 +310,7 @@ public:
 				break;
 			}
 
-			// These tests are probably slow,
-			// run them in small batches.
-			batch(start, end, 4);
+			batch(start, end, batchSize);
 
 			skipStartedOrNotMatching(str);
 		}
