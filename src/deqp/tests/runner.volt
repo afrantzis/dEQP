@@ -59,6 +59,12 @@ fn dispatch(drv: Driver, suites: Suite[])
 			current.runStartsWith("dEQP-GLES3.functional.vertex_arrays.single_attribute", 8);
 			current.runStartsWith("dEQP-GLES3.functional.rasterization", 16);
 			current.runRest();
+		} else if (suite.suffix == "31") {
+			current.runStartsWith("dEQP-GLES31.functional.shaders.builtin_functions.precision.refract", 1);
+			current.runStartsWith("dEQP-GLES31.functional.shaders.builtin_functions.precision.faceforward", 1);
+			current.runStartsWith("dEQP-GLES31.functional.shaders.builtin_functions.precision", 8);
+			current.runStartsWith("dEQP-GLES31.functional.copy_image.compressed.viewclass", 8);
+			current.runRest();
 		} else {
 			current.runRest();
 		}
