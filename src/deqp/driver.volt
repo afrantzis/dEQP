@@ -31,7 +31,7 @@ class Settings
 public:
 	resultsFile: string;
 
-	testNamesFile: string;
+	testNamesFiles: string[];
 	ctsBuildDir: string;
 
 	hasty: bool = true;
@@ -43,7 +43,7 @@ public:
 
 	tempDir: string = "/tmp/dEQP";
 
-	regressionFile: string;
+	regressionFiles: string[];
 
 	testsGLES2: string[];
 	testsGLES3: string[];
@@ -120,11 +120,11 @@ public:
 
 		// Regrssion checking or print failing tests?
 		ret: i32;
-		if (settings.regressionFile) {
-			ret = parseAndCheckRegressions(results.suites, settings.regressionFile);
+		if (settings.regressionFiles.length > 0) {
+			ret = parseAndCheckRegressions(results.suites, settings.regressionFiles);
 		}
 
-		if (settings.printFailing || settings.regressionFile !is null) {
+		if (settings.printFailing || settings.regressionFiles !is null) {
 			printResultsToStdout(results.suites);
 		}
 

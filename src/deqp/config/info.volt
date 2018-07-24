@@ -20,8 +20,12 @@ fn printConfig(s: Settings)
 {
 	info(" :: Config");
 	info("\tprintFailing   = %s", s.printFailing);
-	info("\ttestNamesFile  = '%s'", s.testNamesFile);
-	info("\tregressionFile = '%s'", s.regressionFile);
+	foreach (testNamesFile; s.testNamesFiles) {
+		info("\ttestNamesFile  = %s", testNamesFile);
+	}
+	foreach (regressionFile; s.regressionFiles) {
+		info("\tregressionFile = %s", regressionFile);
+	}
 	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
 	info("\thastyBatchSize = %s%s", s.hastyBatchSize, s.hastyBatchSize == 0 ? " (smart mode)" : "");
 	info("\tthreads        = %s", s.threads);
@@ -56,7 +60,7 @@ fn checkArgs(settings: Settings) i32
 		ret = 1;
 	}
 
-	if (settings.testNamesFile is null) {
+	if (settings.testNamesFiles is null) {
 		printTestNamesFile(" not supplied, use:");
 		ret = 1;
 	}

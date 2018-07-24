@@ -35,7 +35,7 @@ fn parseConfigFile(s: Settings)
 		s.ctsBuildDir = root["ctsBuildDir"].str();
 	}
 	if (root.hasKey("testNamesFile")) {
-		s.testNamesFile = root["testNamesFile"].str();
+		s.testNamesFiles = [root["testNamesFile"].str()];
 	}
 	if (root.hasKey("resultsFile")) {
 		s.resultsFile = root["resultsFile"].str();

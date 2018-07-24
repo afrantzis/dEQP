@@ -23,15 +23,15 @@ import deqp.tests.result;
  */
 fn parseTestFile(s: Settings)
 {
-	if (!watt.exists(s.testNamesFile) || !watt.isFile(s.testNamesFile)) {
-		abort(new "Test names file '${s.testNamesFile}' does not exists!");
-	}
+	abortOnMissingTestsFile(s.testNamesFiles);
+	lines: string[];
 
 	info(" :: Gathering test names.");
-	info("\tReading file ´%s'.", s.testNamesFile);
-
-	file := cast(string) watt.read(s.testNamesFile);
-	lines := watt.splitLines(file);
+	foreach (testNamesFile; s.testNamesFiles) {
+		info("\tReading file %s.", testNamesFile);
+		file := cast(string) watt.read(testNamesFile);
+		lines ~= watt.splitLines(file);
+	}
 
 	g2: StringsSink;
 	g3: StringsSink;
@@ -59,15 +59,11 @@ fn parseTestFile(s: Settings)
 	info("\tGot %s tests.", s.testsGLES2.length + s.testsGLES3.length + s.testsGLES31.length);
 }
 
-fn parseAndCheckRegressions(suites: Suite[], filename: string) i32
+fn parseAndCheckRegressions(suites: Suite[], filenames: string[]) i32
 {
-	if (!watt.exists(filename) || !watt.isFile(filename)) {
-		abort(new "Regression file '${filename}' does not exists!");
-	}
+	abortOnMissingRegressionFile(filenames);
 
 	info(" :: Checking for regressions.");
-	file := cast(string) watt.read(filename);
-	lines := watt.splitLines(file);
 
 	// Build a searchable database.
 	database: Test[string];
@@ -77,42 +73,49 @@ fn parseAndCheckRegressions(suites: Suite[], filename: string) i32
 		}
 	}
 
-	// Skip any json header.
-	count: size_t;
-	foreach (line; lines) {
-		if (watt.startsWith(line, "dEQP-GLES")) {
-			break;
-		}
-		count++;
-	}
-
-	// Loop over all lines not including the JSON header.
 	regressed: bool;
-	foreach (line; lines[count .. $]) {
+	foreach (filename; filenames) {
+		// Load the file and split into lines.
+		info("\tReading file %s.", filename);
+		file := cast(string) watt.read(filename);
+		lines := watt.splitLines(file);
 
-		if (watt.startsWith(line, "dEQP-GLES2") ||
-		    watt.startsWith(line, "dEQP-GLES31") ||
-		    watt.startsWith(line, "dEQP-GLES3")) {
-			/* nop */
-		} else if (watt.startsWith(line, "#") || line.length == 0) {
-			continue;
-		} else {
-			warn("Unknown tests '%s'", line);
-			continue;
+		// Skip any json header.
+		count: size_t;
+		foreach (line; lines) {
+			if (watt.startsWith(line, "dEQP-GLES")) {
+				break;
+			}
+			count++;
 		}
 
-		name, resultText: string;
-		splitNameAndResult(line, out name, out resultText);
-		t := name in database;
-		if (t is null) {
-			continue;
+		// Loop over all lines not including the JSON header.
+		foreach (line; lines[count .. $]) {
+
+			if (watt.startsWith(line, "dEQP-GLES2") ||
+			    watt.startsWith(line, "dEQP-GLES31") ||
+			    watt.startsWith(line, "dEQP-GLES3")) {
+				/* nop */
+			} else if (watt.startsWith(line, "#") || line.length == 0) {
+				continue;
+			} else {
+				warn("Unknown tests '%s'", line);
+				continue;
+			}
+
+			name, resultText: string;
+			splitNameAndResult(line, out name, out resultText);
+			t := name in database;
+			if (t is null) {
+				continue;
+			}
+			test := *t;
+
+			test.compare = parseResult(resultText);
+
+			// Update regression tracking.
+			regressed = regressed || test.hasRegressed();
 		}
-		test := *t;
-
-		test.compare = parseResult(resultText);
-
-		// Update regression tracking.
-		regressed = regressed || test.hasRegressed();
 	}
 
 	if (regressed) {
@@ -235,5 +238,24 @@ fn parseResult(text: string) Result
 	case "CompatibilityWarning": return Result.CompatibilityWarning;
 	case "Pass":                 return Result.Pass;
 	default:                     return Result.Incomplete;
+	}
+}
+
+fn abortOnMissingTestsFile(filenames: string[])
+{
+	foreach (filename; filenames) {
+		if (!watt.exists(filename) || !watt.isFile(filename)) {
+			abort(new "Test names file '${filename}' does not exists!");
+		}
+	}
+}
+
+fn abortOnMissingRegressionFile(filenames: string[])
+{
+
+	foreach (filename; filenames) {
+		if (!watt.exists(filename) || !watt.isFile(filename)) {
+			abort(new "Regression file '${filename}' does not exists!");
+		}
 	}
 }
