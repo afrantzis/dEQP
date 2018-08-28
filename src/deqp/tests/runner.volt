@@ -9,11 +9,12 @@ import watt = [
 	watt.path,
 	watt.io.file,
 	watt.io.streams,
+	watt.io.monotonic,
 	watt.algorithm,
 	watt.text.sink,
 	watt.text.string,
 	watt.text.format,
-	watt.io.monotonic,
+	watt.math.random,
 	];
 
 import watt.path : sep = dirSeparator;
@@ -45,7 +46,10 @@ fn dispatch(drv: Driver, suites: Suite[])
 		current: Current;
 		current.setup(s, suite);
 
-		if (drv.settings.hastyBatchSize != 0) {
+
+		if (drv.settings.randomize != 0) {
+			current.runRandom();
+		} else if (drv.settings.hastyBatchSize != 0) {
 			current.runRest(drv.settings.hastyBatchSize);
 		} else if (suite.suffix == "2") {
 			current.runSingle("dEQP-GLES2.functional.flush_finish.wait");
@@ -273,6 +277,31 @@ public:
 		foreach (i, test; suite.tests) {
 			store[test.name] = i;
 		}
+	}
+
+	fn runRandom()
+	{
+		tests = new Test[](tests);
+
+		seed := s.drv.settings.randomize;
+
+		r: watt.RandomGenerator;
+		r.seed();
+
+		info("\tRandomizing tests using seed %s", seed);
+
+		i: i32 = cast(i32) tests.length - 1;
+
+		for (; i >= 0; i--) {
+
+			index := r.uniformI32(0, i);
+
+			old := tests[index];
+			tests[index] = tests[i];
+			tests[i] = old;
+		}
+
+		runRest(s.drv.settings.hastyBatchSize);
 	}
 
 	/*!
