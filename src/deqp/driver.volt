@@ -39,6 +39,8 @@ public:
 
 	printFailing: bool = false;
 
+	randomize: u32;
+
 	threads: u32;
 
 	tempDir: string = "/tmp/dEQP";

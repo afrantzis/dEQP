@@ -28,6 +28,7 @@ fn printConfig(s: Settings)
 	}
 	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
 	info("\thastyBatchSize = %s%s", s.hastyBatchSize, s.hastyBatchSize == 0 ? " (smart mode)" : "");
+	info("\trandomize      = %s", s.randomize);
 	info("\tthreads        = %s", s.threads);
 	info("\tresultsFile    = '%s'", s.resultsFile);
 	info("\ttempDir        = '%s'", s.tempDir);
@@ -38,6 +39,7 @@ fn printAllArgsAndConfig()
 	printFailing();
 	printThreads();
 	printHastyBatchSize();
+	printRandomize();
 	printCtsBuildDir();
 	printTestNamesFile();
 	printResultsFile();
@@ -102,6 +104,14 @@ fn printThreads(suffix: string = ":")
 fn printHastyBatchSize(suffix: string = ":")
 {
 	info("Hasty batch size%s", suffix);
+	info("\tUse 0 for smart mode.");
+	info("\tArg:    --hasty-batch-size X");
+	info("\tConfig: hastyBatchSize=X");
+}
+
+fn printRandomize(suffix: string = ":")
+{
+	info("Randomize test order%s", suffix);
 	info("\tUse 0 for smart mode.");
 	info("\tArg:    --hasty-batch-size X");
 	info("\tConfig: hastyBatchSize=X");
