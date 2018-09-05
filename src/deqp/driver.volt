@@ -226,6 +226,10 @@ public:
 					continue;
 				}
 
+				// Need to reset the test result.
+				test.result = Result.Incomplete;
+
+				// Then launch the test.
 				group := new Group(this, suite, suite.tests[offset .. offset + 1], cast(u32) offset);
 				group.run(launcher);
 				gs.sink(group);
