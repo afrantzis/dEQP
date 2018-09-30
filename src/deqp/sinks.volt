@@ -84,7 +84,7 @@ public:
 		if (mLength > 0) {
 			return mArr[--mLength];
 		}
-		return T.init;
+		return T.default;
 	}
 
 	fn getLast() T
