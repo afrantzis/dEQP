@@ -45,10 +45,37 @@ fn isResultFailing(result: Result) bool
 	}
 }
 
+fn isResultAndCompareImprovement(result: Result, compare: Result) bool
+{
+	if (result.isResultPassing()) {
+		return compare.isResultFailing();
+	} else {
+		return false;
+	}
+}
+
 fn isResultAndCompareRegression(result: Result, compare: Result) bool
 {
 	if (result.isResultFailing()) {
-		return isResultPassing(compare);
+		return compare.isResultPassing();
+	} else {
+		return false;
+	}
+}
+
+fn isResultAndCompareQualityChange(result: Result, compare: Result) bool
+{
+	if (result.isResultPassing() && compare.isResultPassing()) {
+		return result != compare;
+	} else {
+		return false;
+	}
+}
+
+fn isResultAndCompareAnyChange(result: Result, compare: Result) bool
+{
+	if (result != compare) {
+		return true;
 	} else {
 		return false;
 	}

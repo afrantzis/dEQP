@@ -13,13 +13,17 @@ import deqp.tests.result;
 
 fn printResultsToStdout(suites: Suite[])
 {
-	info(" :: Printing failing tests.");
+	info(" :: Printing changes and failing tests.");
 	foreach (suit; suites) {
 		foreach (test; suit.tests) {
 			if (test.hasRegressed()) {
 				info("%s", new "${test.name} ${test.result} (REGRESSION! ${test.compare})");
 			} else if (test.hasFailed()) {
 				info("%s", new "${test.name} ${test.result}");
+			} else if (test.hasQualityChange()) {
+				info("%s", new "${test.name} ${test.result} (was ${test.compare})");
+			} else if (test.hasAnyChange()) {
+				info("%s", new "${test.name} ${test.result} (was ${test.compare})");
 			}
 		}
 	}

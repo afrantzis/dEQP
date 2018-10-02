@@ -39,9 +39,24 @@ public:
 	@property fn compare(r: Result) Result { if (ptr !is null) ptr.compare = r; return r; }
 	@property fn started(r: bool) bool { if (ptr !is null) ptr.started = r; return r; }
 
+	fn hasImproved() bool
+	{
+		return isResultAndCompareImprovement(result, compare);
+	}
+
 	fn hasRegressed() bool
 	{
 		return isResultAndCompareRegression(result, compare);
+	}
+
+	fn hasQualityChange() bool
+	{
+		return isResultAndCompareQualityChange(result, compare);
+	}
+
+	fn hasAnyChange() bool
+	{
+		return isResultAndCompareAnyChange(result, compare);
 	}
 
 	fn hasPassed() bool
