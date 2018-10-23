@@ -100,6 +100,9 @@ public:
 
 	timeStart, timeStop: i64;
 
+	//! Return value from runner.
+	retval: i32;
+
 
 public:
 	this(drv: Driver, suite: Suite, tests: Test[], offset: u32)
@@ -149,15 +152,33 @@ public:
 	fn readResults()
 	{
 		parseResultsAndAssign(fileConsole, tests);
+
+		// If the testsuit terminated cleanely nothing more to do.
+		if (retval == 0) {
+			return;
+		}
+
+		// Loop over and set tests to BadTerminate(Pass).
+		foreach (test; tests) {
+			if (test.result != Result.Pass) {
+				test.result = Result.BadTerminate;
+			} else {
+				test.result = Result.BadTerminatePass;
+			}
+		}
 	}
 
 
 private:
 	fn done(retval: i32)
 	{
+		// Time keeping.
 		timeStop = watt.ticks();
 		ms := watt.convClockFreq(timeStop - timeStart, watt.ticksPerSecond, 1000);
 		time := watt.format(" (%s.%03ss)", ms / 1000, ms % 1000);
+
+		// Save the retval, for tracking BadTerminate status.
+		this.retval = retval;
 
 		if (retval == 0) {
 			// The test run completed okay.

@@ -255,6 +255,8 @@ fn parseResult(text: string) Result
 	case "Fail":                 return Result.Fail;
 	case "NotSupported":         return Result.NotSupported;
 	case "InternalError":        return Result.InternalError;
+	case "BadTerminate":         return Result.BadTerminate;
+	case "BadTerminatePass":     return Result.BadTerminatePass;
 	case "QualityWarning":       return Result.QualityWarning;
 	case "CompatibilityWarning": return Result.CompatibilityWarning;
 	case "Pass":                 return Result.Pass;

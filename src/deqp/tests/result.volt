@@ -14,6 +14,8 @@ enum Result
 	Fail,
 	NotSupported,
 	InternalError,
+	BadTerminate,
+	BadTerminatePass,
 	QualityWarning,
 	CompatibilityWarning,
 	Pass,
@@ -26,6 +28,8 @@ fn isResultPassing(result: Result) bool
 	case Fail:                 return false;
 	case NotSupported:         return false;
 	case InternalError:        return false;
+	case BadTerminate:         return false;
+	case BadTerminatePass:     return false;
 	case QualityWarning:       return true;
 	case CompatibilityWarning: return true;
 	case Pass:                 return true;
@@ -39,6 +43,8 @@ fn isResultFailing(result: Result) bool
 	case Fail:                 return true;
 	case NotSupported:         return false;
 	case InternalError:        return true;
+	case BadTerminate:         return true;
+	case BadTerminatePass:     return true;
 	case QualityWarning:       return false;
 	case CompatibilityWarning: return false;
 	case Pass:                 return false;
@@ -88,6 +94,8 @@ public:
 	numIncomplete: u32;
 	numInternalError: u32;
 	numNotSupported: u32;
+	numBadTerminate: u32;
+	numBadTerminatePass: u32;
 	numPass: u32;
 	numQualityWarning: u32;
 	numCompatibilityWarning: u32;
@@ -108,7 +116,8 @@ public:
 
 	fn getBad() u32
 	{
-		return numIncomplete + numFail + numInternalError;
+		return numIncomplete + numFail + numInternalError +
+			numBadTerminate + numBadTerminatePass;
 	}
 
 	fn getSkip() u32
@@ -118,7 +127,7 @@ public:
 
 	fn getIncomplete() u32
 	{
-		return numIncomplete;
+		return numIncomplete + numBadTerminate + numBadTerminatePass;
 	}
 
 	fn getTotal() u32
@@ -133,8 +142,8 @@ public:
 	{
 		// Reset the old numbers.
 		numFail = numIncomplete = numInternalError = numNotSupported =
-			numPass = numQualityWarning =
-			numCompatibilityWarning =  0;
+			numBadTerminate = numBadTerminatePass = numPass =
+			numQualityWarning = numCompatibilityWarning =  0;
 
 		foreach (suite; suites) {
 			foreach (test; suite.tests) {
@@ -142,6 +151,8 @@ public:
 				case Incomplete: numIncomplete++; break;
 				case Fail: numFail++; break;
 				case InternalError: numInternalError++; break;
+				case BadTerminate: numBadTerminate++; break;
+				case BadTerminatePass: numBadTerminatePass++; break;
 				case QualityWarning: numQualityWarning++; break;
 				case CompatibilityWarning: numCompatibilityWarning++; break;
 				case Pass: numPass++; break;

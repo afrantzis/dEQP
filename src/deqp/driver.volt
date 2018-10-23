@@ -198,6 +198,8 @@ public:
 
 		if ((total / 8) > inc) {
 			mask |= 1u << Result.Incomplete;
+			mask |= 1u << Result.BadTerminate;
+			mask |= 1u << Result.BadTerminatePass;
 		} else {
 			info("\tTo many incomplete tests %s", inc);
 		}
