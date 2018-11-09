@@ -34,8 +34,7 @@ public:
 	testNamesFiles: string[];
 	ctsBuildDir: string;
 
-	hasty: bool = true;
-	hastyBatchSize: u32;
+	batchSize: u32;
 
 	printFailing: bool = false;
 
@@ -137,7 +136,7 @@ public:
 	fn runTests()
 	{
 		// Run all of the tests.
-		info(" :: Running tests.", settings.hastyBatchSize);
+		info(" :: Running tests.", settings.batchSize);
 
 		// Loop over the testsuites
 		dispatch(this, results.suites);
@@ -156,7 +155,7 @@ public:
 		val := true;
 
 		// Early out to avoid printing info messages.
-		if (bad == 0 || settings.hastyBatchSize == 1) {
+		if (bad == 0 || settings.batchSize == 1) {
 			return 0;
 		}
 
@@ -183,7 +182,7 @@ public:
 		val := true;
 
 		// Early out to avoid printing info messages.
-		if (bad == 0 || settings.hastyBatchSize == 1) {
+		if (bad == 0 || settings.batchSize == 1) {
 			return;
 		}
 

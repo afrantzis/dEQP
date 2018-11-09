@@ -17,12 +17,12 @@ import deqp.config.info;
 fn parseArgs(settings: Settings, args: string[])
 {
 	printFailing: bool;
-	threads, hastyBatchSize, randomize: i32;
+	threads, batchSize, randomize: i32;
 	ctsBuildDir, resultsFile, tempDir, regressionFile: string;
 	testNamesFiles, regressionFiles: string[];
 
 	watt.getopt(ref args, "threads", ref threads);
-	watt.getopt(ref args, "hasty-batch-size", ref hastyBatchSize);
+	watt.getopt(ref args, "batch-size|hasty-batch-size", ref batchSize);
 	watt.getopt(ref args, "cts-build-dir", ref ctsBuildDir);
 	watt.getopt(ref args, "test-names-file", ref testNamesFiles);
 	watt.getopt(ref args, "results-file", ref resultsFile);
@@ -31,11 +31,12 @@ fn parseArgs(settings: Settings, args: string[])
 	watt.getopt(ref args, "randomize", ref randomize);
 	watt.getopt(ref args, "check|regression-file", ref regressionFiles);
 
+
 	if (threads > 0) {
 		settings.threads = cast(u32) threads;
 	}
-	if (hastyBatchSize > 0) {
-		settings.hastyBatchSize = cast(u32) hastyBatchSize;
+	if (batchSize > 0) {
+		settings.batchSize = cast(u32) batchSize;
 	}
 	if (randomize > 0) {
 		settings.randomize = cast(u32) randomize;

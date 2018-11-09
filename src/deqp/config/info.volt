@@ -27,7 +27,7 @@ fn printConfig(s: Settings)
 		info("\tregressionFile = %s", regressionFile);
 	}
 	info("\tctsBuildDir    = '%s'", s.ctsBuildDir);
-	info("\thastyBatchSize = %s%s", s.hastyBatchSize, s.hastyBatchSize == 0 ? " (smart mode)" : "");
+	info("\tbatchSize      = %s%s", s.batchSize, s.batchSize == 0 ? " (smart mode)" : "");
 	info("\trandomize      = %s", s.randomize);
 	info("\tthreads        = %s", s.threads);
 	info("\tresultsFile    = '%s'", s.resultsFile);

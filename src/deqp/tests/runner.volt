@@ -49,8 +49,8 @@ fn dispatch(drv: Driver, suites: Suite[])
 
 		if (drv.settings.randomize != 0) {
 			current.runRandom();
-		} else if (drv.settings.hastyBatchSize != 0) {
-			current.runRest(drv.settings.hastyBatchSize);
+		} else if (drv.settings.batchSize != 0) {
+			current.runRest(drv.settings.batchSize);
 		} else if (suite.suffix == "2") {
 			current.runSingle("dEQP-GLES2.functional.flush_finish.wait");
 			current.runStartsWith("dEQP-GLES2.functional.vertex_arrays.multiple_attributes");
@@ -322,7 +322,7 @@ public:
 			tests[i] = old;
 		}
 
-		runRest(s.drv.settings.hastyBatchSize);
+		runRest(s.drv.settings.batchSize);
 	}
 
 	/*!

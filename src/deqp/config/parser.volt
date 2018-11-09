@@ -41,8 +41,10 @@ fn parseConfigFile(s: Settings)
 		s.resultsFile = root["resultsFile"].str();
 	}
 	if (root.hasKey("hastyBatchSize")) {
-		s.hastyBatchSize = cast(u32) root["hastyBatchSize"].integer();
-		s.hasty = true;
+		s.batchSize = cast(u32) root["hastyBatchSize"].integer();
+	}
+	if (root.hasKey("batchSize")) {
+		s.batchSize = cast(u32) root["batchSize"].integer();
 	}
 	if (root.hasKey("tempDir")) {
 		s.tempDir = root["tempDir"].str();
