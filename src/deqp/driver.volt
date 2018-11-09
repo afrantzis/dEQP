@@ -231,7 +231,7 @@ public:
 				test.result = Result.Incomplete;
 
 				// Then launch the test.
-				group := new Group(this, suite, suite.tests[offset .. offset + 1], cast(u32) offset);
+				group := new Group(this, suite, suite.tests[offset .. offset + 1], cast(u32) offset, "rerun");
 				group.run(launcher);
 				gs.sink(group);
 			}

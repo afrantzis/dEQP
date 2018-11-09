@@ -93,6 +93,7 @@ public:
 	suite: Suite;
 	start, end: u32;
 
+	filePrefix: string;
 	fileCtsLog: string;
 	fileConsole: string;
 	fileTests: string;
@@ -105,16 +106,17 @@ public:
 
 
 public:
-	this(drv: Driver, suite: Suite, tests: Test[], offset: u32)
+	this(drv: Driver, suite: Suite, tests: Test[], offset: u32, filePrefix: string)
 	{
 		this.drv = drv;
 		this.suite = suite;
 		this.tests = tests;
 		this.start = offset + 1;
 		this.end = offset + cast(u32) tests.length;
-		this.fileTests = new "${suite.tempDir}${sep}hasty_${start}.tests";
-		this.fileCtsLog = new "${suite.tempDir}${sep}hasty_${start}.log";
-		this.fileConsole = new "${suite.tempDir}${sep}hasty_${start}.console";
+		this.filePrefix = filePrefix;
+		this.fileTests = new "${suite.tempDir}${sep}${filePrefix}_${start}.tests";
+		this.fileCtsLog = new "${suite.tempDir}${sep}${filePrefix}_${start}.log";
+		this.fileConsole = new "${suite.tempDir}${sep}${filePrefix}_${start}.console";
 
 		drv.removeOnExit(fileTests);
 		drv.removeOnExit(fileCtsLog);
@@ -264,7 +266,7 @@ public:
 
 	fn launch(suite: Suite, tests: Test[], offset: u32)
 	{
-		group := new Group(drv, suite, tests, offset);
+		group := new Group(drv, suite, tests, offset, "batch");
 		group.run(launcher);
 
 		numDispatched += tests.length;
