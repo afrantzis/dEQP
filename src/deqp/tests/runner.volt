@@ -170,6 +170,16 @@ public:
 		}
 	}
 
+	fn writeTestsToFile()
+	{
+		f := new watt.OutputFileStream(fileTests);
+		foreach (t; tests) {
+			f.write(t.name);
+			f.write("\n");
+		}
+		f.flush();
+		f.close();
+	}
 
 private:
 	fn done(retval: i32)
@@ -197,9 +207,13 @@ private:
 				info("\tGLES%s Failed: %s .. %s, retval: %s%s", suite.suffix, start, end, retval, time);
 			}
 
+			// Write out the tests to a file, for debugging.
+			writeTestsToFile();
+
 			// Preserve some files so the user can investigate.
 			drv.preserveOnExit(fileConsole);
 			drv.preserveOnExit(fileCtsLog);
+			drv.preserveOnExit(fileTests);
 		}
 	}
 }
