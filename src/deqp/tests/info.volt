@@ -17,14 +17,48 @@ fn printResultsToStdout(suites: Suite[])
 	foreach (suit; suites) {
 		foreach (test; suit.tests) {
 			if (test.hasRegressed()) {
-				info("%s", new "${test.name} ${test.result} (REGRESSION! ${test.compare})");
-			} else if (test.hasFailed()) {
-				info("%s", new "${test.name} ${test.result}");
+				test.printRegression();
 			} else if (test.hasQualityChange()) {
-				info("%s", new "${test.name} ${test.result} (was ${test.compare})");
+				test.printAnyChange();
 			} else if (test.hasAnyChange()) {
-				info("%s", new "${test.name} ${test.result} (was ${test.compare})");
+				test.printAnyChange();
+			} else if (test.hasFailed()) {
+				test.printFail();
 			}
 		}
+	}
+}
+
+
+private:
+
+
+fn printRegression(test: Test)
+{
+	info("%s %s \u001b[41;1mREGRESSED\u001b[0m from (%s)", test.name, test.result.format(), test.compare.format());
+}
+
+fn printAnyChange(test: Test)
+{
+	info("%s %s was (%s)", test.name, test.result.format(), test.compare.format());
+}
+
+fn printFail(test: Test)
+{
+	info("%s %s", test.name, test.result.format());
+}
+
+fn format(res: Result) string
+{
+	final switch (res) with (Result) {
+	case Incomplete:           return "\u001b[31mIncomplete\u001b[0m";
+	case Fail:                 return "\u001b[31mFail\u001b[0m";
+	case NotSupported:         return "\u001b[34mNotSupported\u001b[0m";
+	case InternalError:        return "\u001b[31mInternalError\u001b[0m";
+	case BadTerminate:         return "\u001b[31mBadTerminate\u001b[0m";
+	case BadTerminatePass:     return "\u001b[31mBadTerminatePass\u001b[0m";
+	case QualityWarning:       return "\u001b[33mQualityWarning\u001b[0m";
+	case CompatibilityWarning: return "\u001b[33mCompatibilityWarning\u001b[0m";
+	case Pass:                 return "\u001b[32mPass\u001b[0m";
 	}
 }
