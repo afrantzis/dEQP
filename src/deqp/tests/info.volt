@@ -1,7 +1,7 @@
 // Copyright 2018, Collabora Inc.
 // SPDX-License-Identifier: BSL-1.0
 /*!
- * Contains code and classes for managing tests results.
+ * Contains code to print out info lists.
  */
 module deqp.tests.info;
 

@@ -139,6 +139,7 @@ public:
 		return ret;
 	}
 
+	//! Run all of the gathered tests.
 	fn runTests()
 	{
 		// Run all of the tests.
@@ -179,6 +180,7 @@ public:
 		return mask;
 	}
 
+	//! Rerun tests that have failed in a batch.
 	fn rerunTests()
 	{
 		total := results.getTotal();
@@ -253,6 +255,7 @@ public:
 		results.count();
 	}
 
+	//! Parse all of the data that dEQP put into logs.
 	fn readResults(groups: scope Group[])
 	{
 		// As the info string says.
@@ -268,6 +271,7 @@ public:
 		info("\tDone in %s.%03sms", ms / 1000, ms % 1000);
 	}
 
+	//! Write out results into a format that is easy to parse.
 	fn writeResults()
 	{
 		info(" :: Writing results to '%s'", settings.resultsFile);
@@ -321,7 +325,7 @@ public:
 	/*!
 	 * Don't remove the file on exit, this function allows
 	 * you to regret adding a file to the remove list with
-	 * @ref deqp.driver.Driver.removeOnExit .
+	 * @ref deqp.driver.Driver.removeOnExit.
 	 */
 	fn preserveOnExit(file: string) string
 	{

@@ -8,6 +8,10 @@ module deqp.tests.result;
 import deqp.tests.test;
 
 
+/*!
+ * Big enum with all of the status that a test can return.
+ * Has extra status to account for dEQP crashing.
+ */
 enum Result
 {
 	Incomplete,

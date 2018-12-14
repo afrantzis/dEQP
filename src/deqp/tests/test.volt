@@ -1,7 +1,7 @@
 // Copyright 2018, Collabora Inc.
 // SPDX-License-Identifier: BSL-1.0
 /*!
- * Contains class for tests organising them.
+ * Contains class for tests organising them into test suits.
  */
 module deqp.tests.test;
 
