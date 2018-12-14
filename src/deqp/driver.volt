@@ -113,19 +113,25 @@ public:
 		info(" :: All test completed.");
 		info("\tok: %s, warn: %s, bad: %s, skip: %s, total: %s", results.getPass(), results.getWarn(), results.getBad(), results.getSkip(), results.getTotal());
 
+		// First pass at getting a return code.
+		ret: i32;
+		if (results.getBad() > 0) {
+			ret = 1;
+		}
+
 		// Write out the results
 		writeResults();
 
 		// Tidy after us.
 		removeTemporaryFiles();
 
-		// Regrssion checking or print failing tests?
-		ret: i32;
+		// Regrssion checking, will overwrite old return code.
 		if (settings.regressionFiles.length > 0) {
 			ret = parseAndCheckRegressions(results.suites, settings.regressionFiles);
 		}
 
-		if (settings.printFailing || settings.regressionFiles !is null) {
+		// Print failing tests?
+		if (settings.printFailing || settings.regressionFiles.length > 0) {
 			printResultsToStdout(results.suites);
 		}
 
