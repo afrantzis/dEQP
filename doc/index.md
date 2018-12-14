@@ -14,10 +14,10 @@ Run the command it will tell you what's missing.
 
 ### Code documentation
 
-A good place to start is with the [Driver](Driver) class. Along with the
-[deqp.tests](Tests) package that houses all of the modules containing test
+A good place to start is with the [Driver][Driver] class. Along with the
+[deqp.tests][Tests] package that houses all of the modules containing test
 related code. Some deep diving into the program lanching can be found
-[here](Launcher).
+[here][Launcher].
 
 ### Downloading
 
@@ -47,4 +47,4 @@ git clone https://github.com/Wallbraker/dEQP
 
 [Driver]: {{ "deqp.driver.Driver" | vdoc_find_url }} "Driver class"
 [Tests]: {{ "deqp.tests" | vdoc_find_url }} "Tests module"
-[Launcher]: {{ "deqp.launcher.linux" | vdoc_find_url }} "Launcher class"
+[Launcher]: {{ "deqp.launcher.posix" | vdoc_find_url }} "Launcher class"
