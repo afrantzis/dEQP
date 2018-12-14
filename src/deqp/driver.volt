@@ -52,8 +52,8 @@ public:
 }
 
 /*!
- * This does not represent a graphics but code that houses
- * logic for driving the dEQP process from start to finish.
+ * This does not represent a graphics driver but code that houses logic for
+ * driving the dEQP process from start to finish.
  */
 class Driver
 {
@@ -313,7 +313,9 @@ public:
 	}
 
 	/*!
-	 * Don't remove the file on exit.
+	 * Don't remove the file on exit, this function allows
+	 * you to regret adding a file to the remove list with
+	 * @ref deqp.driver.Driver.removeOnExit .
 	 */
 	fn preserveOnExit(file: string) string
 	{
