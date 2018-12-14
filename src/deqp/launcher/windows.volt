@@ -1,7 +1,7 @@
 // Copyright 2018, Jakob Bornecrantz.
 // SPDX-License-Identifier: BSL-1.0
 /*!
- * Launches tests.
+ * Stub code to at least compile on windows.
  */
 module deqp.launcher.windows;
 

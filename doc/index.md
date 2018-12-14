@@ -12,6 +12,13 @@ Experiments in running the dEQP testsuit faster.
 Run the command it will tell you what's missing.
 
 
+### Code documentation
+
+A good place to start is with the [Driver](Driver) class. Along with the
+[deqp.tests](Tests) package that houses all of the modules containing test
+related code. Some deep diving into the program lanching can be found
+[here](Launcher).
+
 ### Downloading
 
 Download from the CI here:
@@ -38,3 +45,6 @@ git clone https://github.com/Wallbraker/dEQP
 ./battery build
 ```
 
+[Driver]: {{ "deqp.driver.Driver" | vdoc_find_url }} "Driver class"
+[Tests]: {{ "deqp.tests" | vdoc_find_url }} "Tests module"
+[Launcher]: {{ "deqp.launcher.linux" | vdoc_find_url }} "Launcher class"

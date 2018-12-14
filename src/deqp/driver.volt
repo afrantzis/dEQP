@@ -65,6 +65,9 @@ public:
 
 
 public:
+	/*!
+	 * Main function, called from @ref main.main.
+	 */
 	fn run(args: string[]) i32
 	{
 		settings = new Settings();
@@ -139,7 +142,9 @@ public:
 		return ret;
 	}
 
-	//! Run all of the gathered tests.
+	/*!
+	 * Run all of the gathered tests.
+	 */
 	fn runTests()
 	{
 		// Run all of the tests.
@@ -152,7 +157,9 @@ public:
 		results.count();
 	}
 
-	//! Fuzzyish logic for test rerunning.
+	/*!
+	 * Fuzzyish logic for test rerunning.
+	 */
 	fn getRerunMask() u32
 	{
 		total := results.getTotal();
@@ -180,7 +187,9 @@ public:
 		return mask;
 	}
 
-	//! Rerun tests that have failed in a batch.
+	/*!
+	 * Rerun tests that have failed in a batch.
+	 */
 	fn rerunTests()
 	{
 		total := results.getTotal();
@@ -255,7 +264,9 @@ public:
 		results.count();
 	}
 
-	//! Parse all of the data that dEQP put into logs.
+	/*!
+	 * Parse all of the data that dEQP put into logs.
+	 */
 	fn readResults(groups: scope Group[])
 	{
 		// As the info string says.
@@ -271,7 +282,9 @@ public:
 		info("\tDone in %s.%03sms", ms / 1000, ms % 1000);
 	}
 
-	//! Write out results into a format that is easy to parse.
+	/*!
+	 * Write out results into a format that is easy to parse.
+	 */
 	fn writeResults()
 	{
 		info(" :: Writing results to '%s'", settings.resultsFile);

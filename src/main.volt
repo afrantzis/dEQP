@@ -5,6 +5,10 @@ module main;
 import deqp.driver;
 
 
+/*!
+ * Instantiates a @ref deqp.driver.Driver
+ * and calls @ref deqp.driver.Driver.run.
+ */
 fn main(args: string[]) i32
 {
 	d := new Driver();

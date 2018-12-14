@@ -1,7 +1,7 @@
 // Copyright 2016-2018, Jakob Bornecrantz.
 // SPDX-License-Identifier: BSL-1.0
 /*!
- * Launches tests.
+ * Posix implementation of program launcher.
  */
 module deqp.launcher.posix;
 
@@ -13,6 +13,9 @@ import watt = [watt.io, watt.io.streams];
 import posix = [core.c.posix.unistd, core.c.posix.fcntl];
 
 
+/*!
+ * Used to launch programs and managed launched programs.
+ */
 class Launcher
 {
 private:
@@ -25,6 +28,17 @@ public:
 		mProcs = new proc.Group(numThreads);
 	}
 
+	/*!
+	 * Launch a program @p cmd with @p args and pipe @p input to it's
+	 * standard input. Should the maximum number of threads been reached
+	 * this function will block until one has completed.
+	 *
+	 * @param[in] cmd The program to launch.
+	 * @param[in] args Arguments to the program.
+	 * @param[in] input Pipe the contents to stdin. The program to launch.
+	 * @param[in] console Used as stdout and stderr.
+	 * @param[in] done Delegate to be called on program termination.
+	 */
 	void run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, done: dg(i32))
 	{
 		fds: i32[2];
@@ -51,6 +65,9 @@ public:
 		posix.close(writeFD);
 	}
 
+	/*!
+	 * Wait for all launched processes to complete.
+	 */
 	fn waitAll()
 	{
 		mProcs.waitAll();
