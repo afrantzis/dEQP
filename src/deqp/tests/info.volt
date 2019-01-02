@@ -46,7 +46,7 @@ fn printResultFromGroup(suite: Suite, tests: Test[], retval: i32, start: u32, en
 	} else if (hasFailedTests) {
 		// One or more tests failed.
 		if (tests.length == 1) {
-			info("\t\u001b[31m⨯\u001b[0m GLES%s had failures: %s%s", suite.suffix, tests[0].name, time);
+			info("\t\u001b[31m⨯\u001b[0m GLES%s test failed: %s%s", suite.suffix, tests[0].name, time);
 		} else {
 			info("\t\u001b[31m⨯\u001b[0m GLES%s had failures: %s .. %s%s", suite.suffix, start, end, time);
 		}
