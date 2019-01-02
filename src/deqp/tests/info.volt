@@ -29,6 +29,36 @@ fn printResultsToStdout(suites: Suite[])
 	}
 }
 
+fn printResultFromGroup(suite: Suite, tests: Test[], retval: i32, start: u32, end: u32, time: string)
+{
+	hasFailedTests: bool;
+	foreach (test; tests) {
+		hasFailedTests |= test.hasFailed();
+	}
+
+	if (retval != 0) {
+		// The test run didn't complete.
+		if (tests.length == 1) {
+			info("\t\u001b[41;1m!\u001b[0m GLES%s bad retval: %s, retval: %s%s", suite.suffix, tests[0].name, retval, time);
+		} else {
+			info("\t\u001b[41;1m!\u001b[0m GLES%s bad retval: %s .. %s, retval: %s%s", suite.suffix, start, end, retval, time);
+		}
+	} else if (hasFailedTests) {
+		// One or more tests failed.
+		if (tests.length == 1) {
+			info("\t\u001b[31m⨯\u001b[0m GLES%s had failures: %s%s", suite.suffix, tests[0].name, time);
+		} else {
+			info("\t\u001b[31m⨯\u001b[0m GLES%s had failures: %s .. %s%s", suite.suffix, start, end, time);
+		}
+	} else {
+		// The test run completed okay.
+		if (tests.length == 1) {
+			info("\t\u001b[32m✔\u001b[0m GLES%s done: %s%s", suite.suffix, tests[0].name, time);
+		} else {
+			info("\t\u001b[32m✔\u001b[0m GLES%s done: %s .. %s%s", suite.suffix, start, end, time);
+		}
+	}
+}
 
 private:
 

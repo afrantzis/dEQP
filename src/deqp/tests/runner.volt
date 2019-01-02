@@ -27,6 +27,7 @@ import deqp.driver;
 import deqp.launcher;
 
 import deqp.tests.test;
+import deqp.tests.info;
 import deqp.tests.result;
 import deqp.tests.parser;
 
@@ -78,9 +79,6 @@ fn dispatch(drv: Driver, suites: Suite[])
 
 	// Wait for all test groups to complete.
 	drv.launcher.waitAll();
-
-	// As the function says.
-	drv.readResults(s.gs.toArray());
 }
 
 /*!
@@ -151,6 +149,46 @@ public:
 		console.close();
 	}
 
+
+	fn writeTestsToFile()
+	{
+		f := new watt.OutputFileStream(fileTests);
+		foreach (t; tests) {
+			f.write(t.name);
+			f.write("\n");
+		}
+		f.flush();
+		f.close();
+	}
+
+private:
+	fn done(retval: i32)
+	{
+		// Save the retval, for tracking BadTerminate status.
+		this.retval = retval;
+
+		readResults();
+
+		// Time keeping.
+		timeStop = watt.ticks();
+		ms := watt.convClockFreq(timeStop - timeStart, watt.ticksPerSecond, 1000);
+		time := watt.format(" (%s.%03ss)", ms / 1000, ms % 1000);
+
+
+		printResultFromGroup(suite, tests, retval, start, end, time);
+
+		// If the test run didn't complete.
+		if (retval != 0) {
+			// Write out the tests to a file, for debugging.
+			writeTestsToFile();
+
+			// Preserve some files so the user can investigate.
+			drv.preserveOnExit(fileConsole);
+			drv.preserveOnExit(fileCtsLog);
+			drv.preserveOnExit(fileTests);
+		}
+	}
+
 	fn readResults()
 	{
 		parseResultsAndAssign(fileConsole, tests);
@@ -167,53 +205,6 @@ public:
 			} else {
 				test.result = Result.BadTerminatePass;
 			}
-		}
-	}
-
-	fn writeTestsToFile()
-	{
-		f := new watt.OutputFileStream(fileTests);
-		foreach (t; tests) {
-			f.write(t.name);
-			f.write("\n");
-		}
-		f.flush();
-		f.close();
-	}
-
-private:
-	fn done(retval: i32)
-	{
-		// Time keeping.
-		timeStop = watt.ticks();
-		ms := watt.convClockFreq(timeStop - timeStart, watt.ticksPerSecond, 1000);
-		time := watt.format(" (%s.%03ss)", ms / 1000, ms % 1000);
-
-		// Save the retval, for tracking BadTerminate status.
-		this.retval = retval;
-
-		if (retval == 0) {
-			// The test run completed okay.
-			if (tests.length == 1) {
-				info("\tGLES%s Done: %s%s", suite.suffix, tests[0].name, time);
-			} else {
-				info("\tGLES%s Done: %s .. %s%s", suite.suffix, start, end, time);
-			}
-		} else {
-			// The test run didn't complete.
-			if (tests.length == 1) {
-				info("\tGLES%s Failed: %s, retval: %s%s", suite.suffix, tests[0].name, retval, time);
-			} else {
-				info("\tGLES%s Failed: %s .. %s, retval: %s%s", suite.suffix, start, end, retval, time);
-			}
-
-			// Write out the tests to a file, for debugging.
-			writeTestsToFile();
-
-			// Preserve some files so the user can investigate.
-			drv.preserveOnExit(fileConsole);
-			drv.preserveOnExit(fileCtsLog);
-			drv.preserveOnExit(fileTests);
 		}
 	}
 }
