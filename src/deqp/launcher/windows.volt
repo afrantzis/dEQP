@@ -8,6 +8,7 @@ module deqp.launcher.windows;
 version (Windows):
 
 import watt = [watt.io, watt.io.streams];
+import proc = watt.process;
 
 
 class Launcher
@@ -17,8 +18,9 @@ public:
 	{
 	}
 
-	void run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, done: dg(i32))
+	fn run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, env: proc.Enviroment, done: dg(i32)) Pid
 	{
+		return null;
 	}
 
 	fn waitAll()

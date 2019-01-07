@@ -39,7 +39,7 @@ public:
 	 * @param[in] console Used as stdout and stderr.
 	 * @param[in] done Delegate to be called on program termination.
 	 */
-	void run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, done: dg(i32))
+	fn run(cmd: string, args: string[], input: string, console: watt.OutputFileStream, env: proc.Environment, done: dg(i32)) proc.Pid
 	{
 		fds: i32[2];
 		if (ret := posix.pipe(ref fds)) {
@@ -53,7 +53,7 @@ public:
 		posix.fcntl(writeFD, posix.F_SETFD, posix.FD_CLOEXEC);
 
 		// Spawn the process.
-		mProcs.run(cmd, args, readFD, console.fd, console.fd, null, done);
+		pid := mProcs.run(cmd, args, readFD, console.fd, console.fd, env, done);
 
 		// Close the output side.
 		posix.close(readFD);
@@ -63,6 +63,8 @@ public:
 
 		// Close the input side.
 		posix.close(writeFD);
+
+		return pid;
 	}
 
 	/*!

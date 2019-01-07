@@ -19,7 +19,9 @@ import watt = [
 
 import watt.path : sep = dirSeparator;
 
+import sig = core.c.signal;
 import file = watt.io.file;
+import proc = watt.process;
 
 import deqp.io;
 import deqp.sinks;
@@ -94,14 +96,19 @@ public:
 	filePrefix: string;
 	fileCtsLog: string;
 	fileConsole: string;
+	fileVtestLog: string;
 	fileTests: string;
 	tests: Test[];
 
 	timeStart, timeStop: i64;
 
 	//! Return value from runner.
-	retval: i32;
+	runnerRetVal: i32;
+	runnerExited: bool;
 
+	vtestPid: proc.Pid;
+	vtestRetVal: i32;
+	vtestExited: bool;
 
 public:
 	this(drv: Driver, suite: Suite, tests: Test[], offset: u32, filePrefix: string)
@@ -115,38 +122,25 @@ public:
 		this.fileTests = new "${suite.tempDir}${sep}${filePrefix}_${start}.tests";
 		this.fileCtsLog = new "${suite.tempDir}${sep}${filePrefix}_${start}.log";
 		this.fileConsole = new "${suite.tempDir}${sep}${filePrefix}_${start}.console";
+		this.fileVtestLog = new "${suite.tempDir}${sep}${filePrefix}_${start}.vtest-console";
 
-		drv.removeOnExit(fileTests);
-		drv.removeOnExit(fileCtsLog);
-		drv.removeOnExit(fileConsole);
+		drv.removeOnExit(this.fileTests);
+		drv.removeOnExit(this.fileCtsLog);
+		drv.removeOnExit(this.fileConsole);
+		drv.removeOnExit(this.fileVtestLog);
 	}
 
 	fn run(launcher: Launcher)
 	{
-		args := [
-			"--deqp-stdin-caselist",
-			"--deqp-surface-type=window",
-			new "--deqp-gl-config-name=${suite.config}",
-			"--deqp-log-images=enable",
-			"--deqp-watchdog=enable",
-			"--deqp-visibility=hidden",
-			new "--deqp-surface-width=${suite.surfaceWidth}",
-			new "--deqp-surface-height=${suite.surfaceHeight}",
-			new "--deqp-log-filename=${fileCtsLog}",
-		];
-
-		console := new watt.OutputFileStream(fileConsole);
-
-		ss: watt.StringSink;
-		foreach (test; tests) {
-			ss.sink(test.name);
-			ss.sink("\n");
+		if (drv.settings.vtestCmd !is null) {
+			return runWithVtest(launcher);
 		}
 
-		timeStart = watt.ticks();
-
-		launcher.run(suite.command, args, ss.toString(), console, done);
-		console.close();
+		if (drv.settings.vtestCmd is null) {
+			runTests(launcher);
+		} else {
+			assert(false, "vtest not supported on this platform!");
+		}
 	}
 
 
@@ -161,11 +155,97 @@ public:
 		f.close();
 	}
 
+
 private:
-	fn done(retval: i32)
+	fn makeArgs() string[]
+	{
+		return [
+			"--deqp-stdin-caselist",
+			"--deqp-surface-type=window",
+			new "--deqp-gl-config-name=${suite.config}",
+			"--deqp-log-images=enable",
+			"--deqp-watchdog=enable",
+			"--deqp-visibility=hidden",
+			new "--deqp-surface-width=${suite.surfaceWidth}",
+			new "--deqp-surface-height=${suite.surfaceHeight}",
+			new "--deqp-log-filename=${fileCtsLog}",
+		];
+	}
+
+	fn makeTestsString() string
+	{
+		ss: watt.StringSink;
+		foreach (test; tests) {
+			ss.sink(test.name);
+			ss.sink("\n");
+		}
+
+		return ss.toString();
+	}
+
+	fn runTests(launcher: Launcher)
+	{
+		args := makeArgs();
+		testsStr := makeTestsString();
+		console := new watt.OutputFileStream(fileConsole);
+
+		timeStart = watt.ticks();
+		launcher.run(suite.command, args, testsStr, console, null, doneRunner);
+		console.close();
+	}
+
+	version (Posix) fn runWithVtest(launcher: Launcher)
+	{
+		vtestCmd := drv.settings.vtestCmd;
+		vtestConsole := new watt.OutputFileStream(fileVtestLog);
+		vtestInput: string = null;
+		vtestArgs: string[] = null;
+		vtestEnv := proc.retrieveEnvironment();
+
+		vtestPid = launcher.run(vtestCmd, vtestArgs, vtestInput, vtestConsole, vtestEnv, doneVtestCmd);
+		vtestConsole.close();
+
+		runnerEnv := proc.retrieveEnvironment();
+		runnerEnv.set("LIBGL_ALWAYS_SOFTWARE", "true");
+		runnerEnv.set("GALLIUM_DRIVER", "virpipe");
+		runnerArgs := makeArgs();
+		runnerInput := makeTestsString();
+		runnerConsole := new watt.OutputFileStream(fileConsole);
+
+		timeStart = watt.ticks();
+
+		launcher.run(suite.command, runnerArgs, runnerInput, runnerConsole, runnerEnv, doneVtestRunner);
+		runnerConsole.close();
+	}
+
+	version (Posix) fn doneVtestRunner(retval: i32)
+	{
+		info("doneVtestRunner");
+		// Call normal handler function.
+		doneRunner(this.runnerRetVal);
+
+		// Kill the vtest process if it is still running.
+		if (!vtestExited) {
+			sig.kill(vtestPid._pid, sig.SIGTERM);
+		}
+	}
+
+	version (Posix) fn doneVtestCmd(retval: i32)
+	{
+		info("doneVtestCmd");
+		this.vtestExited = true;
+		this.vtestRetVal = retval;
+
+		if (retval != 0) {
+			drv.preserveOnExit(fileVtestLog);
+		}
+	}
+
+	fn doneRunner(retval: i32)
 	{
 		// Save the retval, for tracking BadTerminate status.
-		this.retval = retval;
+		this.runnerExited = true;
+		this.runnerRetVal = retval;
 
 		readResults();
 
@@ -173,7 +253,6 @@ private:
 		timeStop = watt.ticks();
 		ms := watt.convClockFreq(timeStop - timeStart, watt.ticksPerSecond, 1000);
 		time := watt.format(" (%s.%03ss)", ms / 1000, ms % 1000);
-
 
 		printResultFromGroup(suite, tests, retval, start, end, time);
 
@@ -194,7 +273,7 @@ private:
 		parseResultsAndAssign(fileConsole, tests);
 
 		// If the testsuit terminated cleanely nothing more to do.
-		if (retval == 0) {
+		if (runnerRetVal == 0) {
 			return;
 		}
 
