@@ -46,6 +46,8 @@ public:
 
 	regressionFiles: string[];
 
+	testsGL3: string[];
+	testsGL31: string[];
 	testsGLES2: string[];
 	testsGLES3: string[];
 	testsGLES31: string[];
@@ -91,17 +93,25 @@ public:
 		launcher = new Launcher(cast(u32) settings.threads);
 
 		// Organize the tests
+		if (settings.testsGL3.length > 0) {
+			tests := settings.testsGL3;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "3", tests);
+		}
+		if (settings.testsGL31.length > 0) {
+			tests := settings.testsGL31;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
+		}
 		if (settings.testsGLES2.length > 0) {
 			tests := settings.testsGLES2;
-			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "2", tests);
+			results.suites ~= new CtsSuite(this, settings.ctsBuildDir, settings.tempDir, "2", tests);
 		}
 		if (settings.testsGLES3.length > 0) {
 			tests := settings.testsGLES3;
-			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "3", tests);
+			results.suites ~= new CtsSuite(this, settings.ctsBuildDir, settings.tempDir, "3", tests);
 		}
 		if (settings.testsGLES31.length > 0) {
 			tests := settings.testsGLES31;
-			results.suites ~= new Suite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
+			results.suites ~= new CtsSuite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
 		}
 
 		// The main body of work.

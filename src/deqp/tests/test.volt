@@ -83,6 +83,7 @@ class Suite
 {
 public:
 	drv: Driver;
+	api: string;
 	suffix: string;
 	command: string;
 	runDir: string;
@@ -93,19 +94,37 @@ public:
 
 	tests: Test[];
 
-
-public:
 	this(drv: Driver, buildDir: string, tempBaseDir: string, suffix: string, tests: string[])
 	{
 		this.drv = drv;
 		this.suffix = suffix;
-		tempDir = new "${tempBaseDir}${sep}GLES${suffix}";
-		command = new "${buildDir}${sep}modules${sep}gles${suffix}${sep}deqp-gles${suffix}";
 		runDir = new "${buildDir}${sep}external${sep}openglcts${sep}modules";
 
 		this.tests = new Test[](tests.length);
 		foreach (i, ref test; this.tests) {
 			test.set(tests[i]);
 		}
+	}
+}
+
+class CtsSuite : Suite
+{
+	this(drv: Driver, buildDir: string, tempBaseDir: string, suffix: string, tests: string[])
+	{
+		super(drv, buildDir, tempBaseDir, suffix, tests);
+		api = "GLES";
+		tempDir = new "${tempBaseDir}${sep}GLES${suffix}";
+		command = new "${buildDir}${sep}modules${sep}gles${suffix}${sep}deqp-gles${suffix}";
+	}
+}
+
+class KhrSuite : Suite
+{
+	this(drv: Driver, buildDir: string, tempBaseDir: string, suffix: string, tests: string[])
+	{
+		super(drv, buildDir, tempBaseDir, suffix, tests);
+		api = "GL";
+		tempDir = new "${tempBaseDir}${sep}GL${suffix}";
+		command = new "${buildDir}${sep}external${sep}openglcts${sep}modules${sep}glcts";
 	}
 }

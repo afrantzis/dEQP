@@ -33,18 +33,24 @@ fn parseTestFile(s: Settings)
 		lines ~= watt.splitLines(file);
 	}
 
-	g2: StringsSink;
-	g3: StringsSink;
-	g31: StringsSink;
+	gl3: StringsSink;
+	gl31: StringsSink;
+	gles2: StringsSink;
+	gles3: StringsSink;
+	gles31: StringsSink;
 
 	info("\tOrganizing tests.");
 	foreach (line; lines) {
 		if (watt.startsWith(line, "dEQP-GLES2")) {
-			g2.sink(line);
+			gles2.sink(line);
 		} else if (watt.startsWith(line, "dEQP-GLES31")) {
-			g31.sink(line);
+			gles31.sink(line);
 		} else if (watt.startsWith(line, "dEQP-GLES3")) {
-			g3.sink(line);
+			gles3.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL30")) {
+			gl3.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL31")) {
+			gl31.sink(line);
 		} else if (watt.startsWith(line, "#") || line.length == 0) {
 			/* nop */
 		} else {
@@ -52,11 +58,13 @@ fn parseTestFile(s: Settings)
 		}
 	}
 
-	s.testsGLES2 = g2.toArray();
-	s.testsGLES3 = g3.toArray();
-	s.testsGLES31 = g31.toArray();
+	s.testsGL3 = gl3.toArray();
+	s.testsGL31 = gl31.toArray();
+	s.testsGLES2 = gles2.toArray();
+	s.testsGLES3 = gles3.toArray();
+	s.testsGLES31 = gles31.toArray();
 
-	info("\tGot %s tests.", s.testsGLES2.length + s.testsGLES3.length + s.testsGLES31.length);
+	info("\tGot %s tests.", s.testsGL3.length + s.testsGL31.length + s.testsGLES2.length + s.testsGLES3.length + s.testsGLES31.length);
 }
 
 fn parseAndCheckRegressions(suites: Suite[], filenames: string[]) i32
@@ -92,7 +100,9 @@ fn parseAndCheckRegressions(suites: Suite[], filenames: string[]) i32
 		// Loop over all lines not including the JSON header.
 		foreach (line; lines[count .. $]) {
 
-			if (watt.startsWith(line, "dEQP-GLES2") ||
+			if (watt.startsWith(line, "KHR-GL31") ||
+			    watt.startsWith(line, "KHR-GL30") ||
+			    watt.startsWith(line, "dEQP-GLES2") ||
 			    watt.startsWith(line, "dEQP-GLES31") ||
 			    watt.startsWith(line, "dEQP-GLES3")) {
 				/* nop */
