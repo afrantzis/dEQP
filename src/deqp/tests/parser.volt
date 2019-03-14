@@ -52,7 +52,7 @@ fn parseTestFile(s: Settings)
 			gl3.sink(line);
 		} else if (watt.startsWith(line, "KHR-GL31")) {
 			gl31.sink(line);
-		} else if (watt.startsWith(line, "KHR-GL31")) {
+		} else if (watt.startsWith(line, "KHR-GL32")) {
 			gl32.sink(line);
 		} else if (watt.startsWith(line, "#") || line.length == 0) {
 			/* nop */
