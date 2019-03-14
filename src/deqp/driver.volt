@@ -48,6 +48,7 @@ public:
 
 	testsGL3: string[];
 	testsGL31: string[];
+	testsGL32: string[];
 	testsGLES2: string[];
 	testsGLES3: string[];
 	testsGLES31: string[];
@@ -100,6 +101,10 @@ public:
 		if (settings.testsGL31.length > 0) {
 			tests := settings.testsGL31;
 			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "31", tests);
+		}
+		if (settings.testsGL32.length > 0) {
+			tests := settings.testsGL32;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "32", tests);
 		}
 		if (settings.testsGLES2.length > 0) {
 			tests := settings.testsGLES2;

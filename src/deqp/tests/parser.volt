@@ -35,6 +35,7 @@ fn parseTestFile(s: Settings)
 
 	gl3: StringsSink;
 	gl31: StringsSink;
+	gl32: StringsSink;
 	gles2: StringsSink;
 	gles3: StringsSink;
 	gles31: StringsSink;
@@ -51,6 +52,8 @@ fn parseTestFile(s: Settings)
 			gl3.sink(line);
 		} else if (watt.startsWith(line, "KHR-GL31")) {
 			gl31.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL31")) {
+			gl32.sink(line);
 		} else if (watt.startsWith(line, "#") || line.length == 0) {
 			/* nop */
 		} else {
@@ -60,11 +63,17 @@ fn parseTestFile(s: Settings)
 
 	s.testsGL3 = gl3.toArray();
 	s.testsGL31 = gl31.toArray();
+	s.testsGL32 = gl32.toArray();
 	s.testsGLES2 = gles2.toArray();
 	s.testsGLES3 = gles3.toArray();
 	s.testsGLES31 = gles31.toArray();
 
-	info("\tGot %s tests.", s.testsGL3.length + s.testsGL31.length + s.testsGLES2.length + s.testsGLES3.length + s.testsGLES31.length);
+	info("\tGot %s tests.", s.testsGL3.length +
+	                        s.testsGL31.length +
+	                        s.testsGL32.length +
+	                        s.testsGLES2.length +
+	                        s.testsGLES3.length +
+	                        s.testsGLES31.length);
 }
 
 fn parseAndCheckRegressions(suites: Suite[], filenames: string[]) i32
@@ -100,8 +109,9 @@ fn parseAndCheckRegressions(suites: Suite[], filenames: string[]) i32
 		// Loop over all lines not including the JSON header.
 		foreach (line; lines[count .. $]) {
 
-			if (watt.startsWith(line, "KHR-GL31") ||
-			    watt.startsWith(line, "KHR-GL30") ||
+			if (watt.startsWith(line, "KHR-GL30") ||
+			    watt.startsWith(line, "KHR-GL31") ||
+			    watt.startsWith(line, "KHR-GL32") ||
 			    watt.startsWith(line, "dEQP-GLES2") ||
 			    watt.startsWith(line, "dEQP-GLES31") ||
 			    watt.startsWith(line, "dEQP-GLES3")) {
