@@ -36,6 +36,13 @@ fn parseTestFile(s: Settings)
 	gl3: StringsSink;
 	gl31: StringsSink;
 	gl32: StringsSink;
+	gl33: StringsSink;
+	gl4: StringsSink;
+	gl41: StringsSink;
+	gl42: StringsSink;
+	gl43: StringsSink;
+	gl45: StringsSink;
+	gl46: StringsSink;
 	gles2: StringsSink;
 	gles3: StringsSink;
 	gles31: StringsSink;
@@ -54,6 +61,22 @@ fn parseTestFile(s: Settings)
 			gl31.sink(line);
 		} else if (watt.startsWith(line, "KHR-GL32")) {
 			gl32.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL33")) {
+			gl33.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL40")) {
+			gl4.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL41")) {
+			gl41.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL42")) {
+			gl42.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL43")) {
+			gl43.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL44")) {
+			gl44.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL45")) {
+			gl45.sink(line);
+		} else if (watt.startsWith(line, "KHR-GL46")) {
+			gl46.sink(line);
 		} else if (watt.startsWith(line, "#") || line.length == 0) {
 			/* nop */
 		} else {
@@ -64,6 +87,14 @@ fn parseTestFile(s: Settings)
 	s.testsGL3 = gl3.toArray();
 	s.testsGL31 = gl31.toArray();
 	s.testsGL32 = gl32.toArray();
+	s.testsGL33 = gl33.toArray();
+	s.testsGL4 = gl4.toArray();
+	s.testsGL41 = gl41.toArray();
+	s.testsGL42 = gl42.toArray();
+	s.testsGL43 = gl43.toArray();
+	s.testsGL44 = gl44.toArray();
+	s.testsGL45 = gl45.toArray();
+	s.testsGL46 = gl46.toArray();
 	s.testsGLES2 = gles2.toArray();
 	s.testsGLES3 = gles3.toArray();
 	s.testsGLES31 = gles31.toArray();
@@ -71,6 +102,14 @@ fn parseTestFile(s: Settings)
 	info("\tGot %s tests.", s.testsGL3.length +
 	                        s.testsGL31.length +
 	                        s.testsGL32.length +
+	                        s.testsGL33.length +
+	                        s.testsGL4.length +
+	                        s.testsGL41.length +
+	                        s.testsGL42.length +
+	                        s.testsGL43.length +
+	                        s.testsGL44.length +
+	                        s.testsGL45.length +
+	                        s.testsGL46.length +
 	                        s.testsGLES2.length +
 	                        s.testsGLES3.length +
 	                        s.testsGLES31.length);
@@ -112,6 +151,14 @@ fn parseAndCheckRegressions(suites: Suite[], filenames: string[]) i32
 			if (watt.startsWith(line, "KHR-GL30") ||
 			    watt.startsWith(line, "KHR-GL31") ||
 			    watt.startsWith(line, "KHR-GL32") ||
+			    watt.startsWith(line, "KHR-GL33") ||
+			    watt.startsWith(line, "KHR-GL40") ||
+			    watt.startsWith(line, "KHR-GL41") ||
+			    watt.startsWith(line, "KHR-GL42") ||
+			    watt.startsWith(line, "KHR-GL43") ||
+			    watt.startsWith(line, "KHR-GL44") ||
+			    watt.startsWith(line, "KHR-GL45") ||
+			    watt.startsWith(line, "KHR-GL46") ||
 			    watt.startsWith(line, "dEQP-GLES2") ||
 			    watt.startsWith(line, "dEQP-GLES31") ||
 			    watt.startsWith(line, "dEQP-GLES3")) {

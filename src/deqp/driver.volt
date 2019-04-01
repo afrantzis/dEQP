@@ -49,6 +49,14 @@ public:
 	testsGL3: string[];
 	testsGL31: string[];
 	testsGL32: string[];
+	testsGL33: string[];
+	testsGL4: string[];
+	testsGL41: string[];
+	testsGL42: string[];
+	testsGL43: string[];
+	testsGL44: string[];
+	testsGL45: string[];
+	testsGL46: string[];
 	testsGLES2: string[];
 	testsGLES3: string[];
 	testsGLES31: string[];
@@ -105,6 +113,38 @@ public:
 		if (settings.testsGL32.length > 0) {
 			tests := settings.testsGL32;
 			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "32", tests);
+		}
+		if (settings.testsGL33.length > 0) {
+			tests := settings.testsGL33;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "33", tests);
+		}
+		if (settings.testsGL4.length > 0) {
+			tests := settings.testsGL4;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "4", tests);
+		}
+		if (settings.testsGL41.length > 0) {
+			tests := settings.testsGL41;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "41", tests);
+		}
+		if (settings.testsGL42.length > 0) {
+			tests := settings.testsGL42;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "42", tests);
+		}
+		if (settings.testsGL43.length > 0) {
+			tests := settings.testsGL43;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "43", tests);
+		}
+		if (settings.testsGL44.length > 0) {
+			tests := settings.testsGL44;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "44", tests);
+		}
+		if (settings.testsGL45.length > 0) {
+			tests := settings.testsGL45;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "45", tests);
+		}
+		if (settings.testsGL46.length > 0) {
+			tests := settings.testsGL46;
+			results.suites ~= new KhrSuite(this, settings.ctsBuildDir, settings.tempDir, "46", tests);
 		}
 		if (settings.testsGLES2.length > 0) {
 			tests := settings.testsGLES2;
